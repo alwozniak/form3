@@ -31,6 +31,9 @@ public class FinancialTransaction {
     @Column(name = "organisation_id")
     private UUID organisationId;
 
+    @OneToOne
+    private FinancialTransactionAttributes attributes;
+
     //
     // Constructors and factory methods.
     //
@@ -50,7 +53,7 @@ public class FinancialTransaction {
     }
 
     //
-    // Getters and setters.
+    // Field accessors.
     //
 
     public UUID getId() {
@@ -67,5 +70,13 @@ public class FinancialTransaction {
 
     public UUID getOrganisationId() {
         return organisationId;
+    }
+
+    public FinancialTransactionAttributes getAttributes() {
+        return attributes;
+    }
+
+    public void setAttributes(FinancialTransactionAttributes attributes) {
+        this.attributes = attributes;
     }
 }

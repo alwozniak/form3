@@ -2,6 +2,8 @@ package com.alwozniak.form3.repository;
 
 import com.alwozniak.form3.domain.FinancialTransaction;
 import com.alwozniak.form3.domain.FinancialTransaction.FinancialTransactionType;
+import com.alwozniak.form3.domain.FinancialTransactionAttributes;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,14 @@ public class FinancialTransactionRepositoryTest {
 
     @Autowired
     private FinancialTransactionRepository transactionRepository;
+
+    @Autowired
+    private FinancialTransactionAttributesRepository attributesRepository;
+
+    @Before
+    public void setUp() {
+        transactionRepository.deleteAllInBatch();
+    }
 
     @Test
     public void shouldReturnEmptyOptionalWhenFinancialTransactionDoesNotExist() {
@@ -52,6 +62,21 @@ public class FinancialTransactionRepositoryTest {
         assertThat(fetchedTransaction.getVersion(), is(FinancialTransaction.DEFAULT_VERSION));
     }
 
+    @Test
+    public void shouldCorrectlyFetchFinancialTransactionAttributesForExistingPaymentTransaction() {
+        FinancialTransaction transaction = transactionRepository.save(FinancialTransaction.newPayment(UUID.randomUUID()));
+        FinancialTransactionAttributes attributes = attributesRepository.save(
+                FinancialTransactionAttributes.builder(transaction).build());
+        transaction.setAttributes(attributes);
+        FinancialTransaction transactionWithAttributes = transactionRepository.save(transaction);
+        UUID transactionWithAttributesId = transactionWithAttributes.getId();
+
+        FinancialTransaction fetchedTransaction = transactionRepository.findById(transactionWithAttributesId)
+                .orElseThrow(RuntimeException::new);
+
+        assertThat(fetchedTransaction.getAttributes(), notNullValue());
+    }
+
     //
     // Helper methods.
     //
@@ -61,4 +86,5 @@ public class FinancialTransactionRepositoryTest {
         FinancialTransaction persistedTransaction = transactionRepository.save(transaction);
         return persistedTransaction.getId();
     }
+
 }
