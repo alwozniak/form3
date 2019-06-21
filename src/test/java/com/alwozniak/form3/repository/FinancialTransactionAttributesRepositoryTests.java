@@ -1,9 +1,7 @@
 package com.alwozniak.form3.repository;
 
-import com.alwozniak.form3.domain.FinancialTransaction;
-import com.alwozniak.form3.domain.FinancialTransactionAttributes;
-import com.alwozniak.form3.domain.ForeignExchangeInfo;
-import com.alwozniak.form3.domain.TransactionParty;
+import com.alwozniak.form3.domain.*;
+import com.alwozniak.form3.domain.ChargesInformation.ChargeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +27,9 @@ public class FinancialTransactionAttributesRepositoryTests {
     @Autowired
     private ForeignExchangeInfoRepository fxInfoRepository;
 
+    @Autowired
+    private ChargesInformationRepository chargesInformationRepository;
+
     @Test
     public void shouldCorrectlyFetchDebtorAndBeneficiaryPartiesFromPersistedAttributesInstance() {
         String beneficiaryName = "Alice Beneficiary";
@@ -41,8 +42,7 @@ public class FinancialTransactionAttributesRepositoryTests {
                 .build();
         FinancialTransactionAttributes persistedAttributes = repository.save(attributes);
 
-        FinancialTransactionAttributes fetchedAttributes = repository.findById(persistedAttributes.getId())
-                .orElseThrow(() -> new RuntimeException("FinancialTransactionAttributes record not found."));
+        FinancialTransactionAttributes fetchedAttributes = fetchAttributesOrThrowException(persistedAttributes);
 
         assertThat(fetchedAttributes.getBeneficiaryParty().getName(), is(beneficiaryName));
         assertThat(fetchedAttributes.getDebtorParty().getName(), is(debtorName));
@@ -63,8 +63,7 @@ public class FinancialTransactionAttributesRepositoryTests {
         fxInfoRepository.save(foreignExchangeInfo);
         FinancialTransactionAttributes persistedAttributes = repository.save(attributes);
 
-        FinancialTransactionAttributes fetchedAttributes = repository.findById(persistedAttributes.getId())
-                .orElseThrow(() -> new RuntimeException("FinancialTransactionAttributes record not found."));
+        FinancialTransactionAttributes fetchedAttributes = fetchAttributesOrThrowException(persistedAttributes);
 
         ForeignExchangeInfo foreignExchangeInfoFromAttributes = fetchedAttributes.getForeignExchangeInfo();
         assertThat(foreignExchangeInfoFromAttributes, notNullValue());
@@ -74,6 +73,35 @@ public class FinancialTransactionAttributesRepositoryTests {
         assertThat(foreignExchangeInfoFromAttributes.getOriginalCurrency(), is(originalCurrency));
     }
 
+    @Test
+    public void shouldCorrectlyFetchChargesInformationFromSavedAttributes() {
+        String senderCurrency = "GBP";
+        Double senderChargeInSenderCurrency = 5.00;
+        Double senderChargeInReceiverCurrency = 10.00;
+        String receiverCurrency = "USD";
+        Double receiverChargesAmount = 1.00;
+        ChargesInformation chargesInformation = ChargesInformation.builder(ChargeType.SHARED)
+                .withReceiverCharge(receiverChargesAmount, receiverCurrency)
+                .withSenderCharge(senderChargeInSenderCurrency, senderCurrency)
+                .withSenderCharge(senderChargeInReceiverCurrency, receiverCurrency)
+                .build();
+        FinancialTransactionAttributes attributes = FinancialTransactionAttributes.builder(getPersistedTransaction())
+                .withChargesInformation(chargesInformation)
+                .build();
+        chargesInformation.setFinancialTransactionAttributes(attributes);
+        chargesInformationRepository.save(chargesInformation);
+        FinancialTransactionAttributes persistedAttributes = repository.save(attributes);
+
+        FinancialTransactionAttributes fetchedAttributes = fetchAttributesOrThrowException(persistedAttributes);
+
+        ChargesInformation chargesInformationFromAttributes = fetchedAttributes.getChargesInformation();
+        assertThat(chargesInformationFromAttributes, notNullValue());
+        assertThat(chargesInformationFromAttributes.getReceiverChargesAmount(), is(receiverChargesAmount));
+        assertThat(chargesInformationFromAttributes.getReceiverChargesCurrency(), is(receiverCurrency));
+        assertThat(chargesInformationFromAttributes.getBearerCode(), is(ChargeType.SHARED));
+        assertThat(chargesInformationFromAttributes.getSenderCharges().size(), is(2));
+    }
+
     //
     // Helper methods.
     //
@@ -81,5 +109,10 @@ public class FinancialTransactionAttributesRepositoryTests {
     private FinancialTransaction getPersistedTransaction() {
         return transactionRepository.save(
                 FinancialTransaction.newPayment(UUID.randomUUID()));
+    }
+
+    private FinancialTransactionAttributes fetchAttributesOrThrowException(FinancialTransactionAttributes attributes) {
+        return repository.findById(attributes.getId())
+                .orElseThrow(() -> new RuntimeException("FinancialTransactionAttributes record not found."));
     }
 }
