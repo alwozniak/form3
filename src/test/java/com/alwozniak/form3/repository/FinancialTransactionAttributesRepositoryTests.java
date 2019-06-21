@@ -35,8 +35,7 @@ public class FinancialTransactionAttributesRepositoryTests {
         String debtorName = "John Debtor";
         TransactionParty beneficiaryParty = TransactionParty.builder().withName(beneficiaryName).build();
         TransactionParty debtorParty = TransactionParty.builder().withName(debtorName).build();
-        FinancialTransaction persistedTransaction = getPersistedTransaction();
-        FinancialTransactionAttributes attributes = FinancialTransactionAttributes.builder(persistedTransaction)
+        FinancialTransactionAttributes attributes = FinancialTransactionAttributes.builder(getPersistedTransaction())
                 .withBeneficiary(beneficiaryParty)
                 .withDebtor(debtorParty)
                 .build();
@@ -57,8 +56,7 @@ public class FinancialTransactionAttributesRepositoryTests {
         String originalCurrency = "USD";
         ForeignExchangeInfo foreignExchangeInfo = new ForeignExchangeInfo(contractReference, exchangeRate,
                 originalAmount, originalCurrency);
-        FinancialTransaction persistedTransaction = getPersistedTransaction();
-        FinancialTransactionAttributes attributes = FinancialTransactionAttributes.builder(persistedTransaction)
+        FinancialTransactionAttributes attributes = FinancialTransactionAttributes.builder(getPersistedTransaction())
                 .withForeignExchangeInfo(foreignExchangeInfo)
                 .build();
         foreignExchangeInfo.setFinancialTransactionAttributes(attributes);
