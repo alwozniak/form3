@@ -25,6 +25,8 @@ public class FinancialTransactionAttributes {
         private String reference;
         private SchemePaymentType schemePaymentType;
         private SchemePaymentSubType schemePaymentSubType;
+        private TransactionParty beneficiaryParty;
+        private TransactionParty debtorParty;
 
         public Builder(FinancialTransaction transaction) {
             this.transaction = transaction;
@@ -33,7 +35,7 @@ public class FinancialTransactionAttributes {
         public FinancialTransactionAttributes build() {
             return new FinancialTransactionAttributes(transaction, amount, currency, endToEndReference, numericReference,
                     paymentId, paymentPurpose, paymentType, paymentScheme, processingDate, reference, schemePaymentType,
-                    schemePaymentSubType);
+                    schemePaymentSubType, beneficiaryParty, debtorParty);
         }
 
         public Builder withAmountInCurrency(Double amount, String currency) {
@@ -74,6 +76,16 @@ public class FinancialTransactionAttributes {
             this.paymentScheme = paymentScheme;
             this.schemePaymentType = schemePaymentType;
             this.schemePaymentSubType = schemePaymentSubType;
+            return this;
+        }
+
+        public Builder withBeneficiary(TransactionParty beneficiary) {
+            this.beneficiaryParty = beneficiary;
+            return this;
+        }
+
+        public Builder withDebtor(TransactionParty debtor) {
+            this.debtorParty = debtor;
             return this;
         }
     }
@@ -145,6 +157,14 @@ public class FinancialTransactionAttributes {
     @Enumerated(EnumType.ORDINAL)
     private SchemePaymentType schemePaymentType;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "beneficiary_party_id")
+    private TransactionParty beneficiaryParty;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "debtor_party_id")
+    private TransactionParty debtorParty;
+
     //
     // Constructors, factory methods and builders.
     //
@@ -168,7 +188,9 @@ public class FinancialTransactionAttributes {
                                            Date processingDate,
                                            String reference,
                                            SchemePaymentType schemePaymentType,
-                                           SchemePaymentSubType schemePaymentSubType) {
+                                           SchemePaymentSubType schemePaymentSubType,
+                                           TransactionParty beneficiaryParty,
+                                           TransactionParty debtorParty) {
         this.transaction = transaction;
         this.amount = amount;
         this.currency = currency;
@@ -182,6 +204,8 @@ public class FinancialTransactionAttributes {
         this.reference = reference;
         this.schemePaymentType = schemePaymentType;
         this.schemePaymentSubType = schemePaymentSubType;
+        this.beneficiaryParty = beneficiaryParty;
+        this.debtorParty = debtorParty;
     }
 
     //
@@ -242,5 +266,13 @@ public class FinancialTransactionAttributes {
 
     public SchemePaymentSubType getSchemePaymentSubType() {
         return schemePaymentSubType;
+    }
+
+    public TransactionParty getBeneficiaryParty() {
+        return beneficiaryParty;
+    }
+
+    public TransactionParty getDebtorParty() {
+        return debtorParty;
     }
 }

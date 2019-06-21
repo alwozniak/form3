@@ -10,18 +10,6 @@ import java.util.UUID;
 @Table(name = "transaction_party")
 public class TransactionParty {
 
-    public String getAccountNumber() {
-        return accountData.getAccountNumber();
-    }
-
-    public AccountNumberCode getAccountNumberCode() {
-        return accountData.getAccountNumberCode();
-    }
-
-    public Integer getAccountType() {
-        return accountData.getAccountType();
-    }
-
     public static class Builder {
 
         private String name;
@@ -77,6 +65,12 @@ public class TransactionParty {
     @Column(name = "bank_id_code")
     private String bankIdCode;
 
+    @OneToOne(mappedBy = "beneficiaryParty")
+    private FinancialTransactionAttributes financialTransactionAttributesForBeneficiary;
+
+    @OneToOne(mappedBy = "debtorParty")
+    private FinancialTransactionAttributes financialTransactionAttributesForDebtor;
+
     //
     // Constructors, factory methods.
     //
@@ -119,5 +113,17 @@ public class TransactionParty {
 
     public String getAccountName() {
         return accountData.getAccountName();
+    }
+
+    public String getAccountNumber() {
+        return accountData.getAccountNumber();
+    }
+
+    public AccountNumberCode getAccountNumberCode() {
+        return accountData.getAccountNumberCode();
+    }
+
+    public Integer getAccountType() {
+        return accountData.getAccountType();
     }
 }

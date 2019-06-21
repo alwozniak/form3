@@ -65,6 +65,21 @@ public class FinancialTransactionAttributesTests {
         assertThat(attributes.getSchemePaymentType(), is(schemePaymentType));
     }
 
+    @Test
+    public void shouldCorrectlySetBeneficiaryAndDebtorParties() {
+        FinancialTransaction transaction = FinancialTransaction.newPayment(UUID.randomUUID());
+
+        TransactionParty beneficiary = TransactionParty.builder().build();
+        TransactionParty debtor = TransactionParty.builder().build();
+        FinancialTransactionAttributes attributes = builder(transaction)
+                .withBeneficiary(beneficiary)
+                .withDebtor(debtor)
+                .build();
+
+        assertThat(attributes.getBeneficiaryParty(), is(beneficiary));
+        assertThat(attributes.getDebtorParty(), is(debtor));
+    }
+
     //
     // Helper methods.
     //
