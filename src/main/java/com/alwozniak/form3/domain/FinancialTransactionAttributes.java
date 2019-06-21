@@ -27,6 +27,7 @@ public class FinancialTransactionAttributes {
         private SchemePaymentSubType schemePaymentSubType;
         private TransactionParty beneficiaryParty;
         private TransactionParty debtorParty;
+        private ForeignExchangeInfo foreignExchangeInfo;
 
         public Builder(FinancialTransaction transaction) {
             this.transaction = transaction;
@@ -35,7 +36,7 @@ public class FinancialTransactionAttributes {
         public FinancialTransactionAttributes build() {
             return new FinancialTransactionAttributes(transaction, amount, currency, endToEndReference, numericReference,
                     paymentId, paymentPurpose, paymentType, paymentScheme, processingDate, reference, schemePaymentType,
-                    schemePaymentSubType, beneficiaryParty, debtorParty);
+                    schemePaymentSubType, beneficiaryParty, debtorParty, foreignExchangeInfo);
         }
 
         public Builder withAmountInCurrency(Double amount, String currency) {
@@ -86,6 +87,11 @@ public class FinancialTransactionAttributes {
 
         public Builder withDebtor(TransactionParty debtor) {
             this.debtorParty = debtor;
+            return this;
+        }
+
+        public Builder withForeignExchangeInfo(ForeignExchangeInfo foreignExchangeInfo) {
+            this.foreignExchangeInfo = foreignExchangeInfo;
             return this;
         }
     }
@@ -165,6 +171,9 @@ public class FinancialTransactionAttributes {
     @JoinColumn(name = "debtor_party_id")
     private TransactionParty debtorParty;
 
+    @OneToOne(mappedBy = "financialTransactionAttributes")
+    private ForeignExchangeInfo foreignExchangeInfo;
+
     //
     // Constructors, factory methods and builders.
     //
@@ -190,7 +199,8 @@ public class FinancialTransactionAttributes {
                                            SchemePaymentType schemePaymentType,
                                            SchemePaymentSubType schemePaymentSubType,
                                            TransactionParty beneficiaryParty,
-                                           TransactionParty debtorParty) {
+                                           TransactionParty debtorParty,
+                                           ForeignExchangeInfo foreignExchangeInfo) {
         this.transaction = transaction;
         this.amount = amount;
         this.currency = currency;
@@ -206,6 +216,7 @@ public class FinancialTransactionAttributes {
         this.schemePaymentSubType = schemePaymentSubType;
         this.beneficiaryParty = beneficiaryParty;
         this.debtorParty = debtorParty;
+        this.foreignExchangeInfo = foreignExchangeInfo;
     }
 
     //
@@ -274,5 +285,9 @@ public class FinancialTransactionAttributes {
 
     public TransactionParty getDebtorParty() {
         return debtorParty;
+    }
+
+    public ForeignExchangeInfo getForeignExchangeInfo() {
+        return foreignExchangeInfo;
     }
 }
