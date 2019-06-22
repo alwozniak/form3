@@ -1,5 +1,7 @@
 package com.alwozniak.form3.domain;
 
+import org.hibernate.annotations.GenericGenerator;
+
 import javax.persistence.*;
 import java.util.UUID;
 
@@ -8,6 +10,9 @@ import java.util.UUID;
 public class ForeignExchangeInfo {
 
     @Id
+    @Column(name = "id", columnDefinition = "uuid")
+    @GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "uuid2")
     private UUID id;
 
     @Column(name = "contract_reference")
@@ -23,8 +28,8 @@ public class ForeignExchangeInfo {
     private String originalCurrency;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "financial_transaction_attributes_id")
-    @MapsId
+    @JoinColumn(name = "financial_transaction_attributes_id",
+            foreignKey = @ForeignKey(name = "fk_foreignExchangeInfo_financialTransactionAttributes"))
     private FinancialTransactionAttributes financialTransactionAttributes;
 
     //

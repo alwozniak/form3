@@ -45,7 +45,7 @@ public class TransactionParty {
     }
 
     @Id
-    @Column(name = "id", columnDefinition = "BINARY(16)")
+    @Column(name = "id", columnDefinition = "uuid")
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "uuid2")
     private UUID id;
@@ -53,7 +53,8 @@ public class TransactionParty {
     @Column(name = "transaction_party_name")
     private String name;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @PrimaryKeyJoinColumn
     private AccountData accountData;
 
     @Column(name = "address")

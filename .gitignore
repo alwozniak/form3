@@ -4,3 +4,6 @@
 
 # Built sources.
 target/
+
+# Properties files.
+src/main/resources/application.properties

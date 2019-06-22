@@ -119,7 +119,7 @@ public class FinancialTransactionAttributes {
     }
 
     @Id
-    @Column(name = "id", columnDefinition = "BINARY(16)")
+    @Column(name = "id", columnDefinition = "uuid")
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "uuid2")
     private UUID id;
@@ -177,10 +177,10 @@ public class FinancialTransactionAttributes {
     @JoinColumn(name = "debtor_party_id")
     private TransactionParty debtorParty;
 
-    @OneToOne(mappedBy = "financialTransactionAttributes")
+    @OneToOne(mappedBy = "financialTransactionAttributes", cascade = CascadeType.ALL)
     private ForeignExchangeInfo foreignExchangeInfo;
 
-    @OneToOne(mappedBy = "financialTransactionAttributes")
+    @OneToOne(mappedBy = "financialTransactionAttributes", cascade = CascadeType.ALL)
     private ChargesInformation chargesInformation;
 
     //

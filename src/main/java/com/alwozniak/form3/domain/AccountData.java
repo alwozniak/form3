@@ -1,5 +1,7 @@
 package com.alwozniak.form3.domain;
 
+import org.hibernate.annotations.Type;
+
 import javax.persistence.*;
 import java.util.UUID;
 
@@ -60,9 +62,7 @@ public class AccountData {
     @Column(name = "account_type")
     private Integer accountType;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @MapsId
-    @JoinColumn(name = "id")
+    @OneToOne(mappedBy = "accountData")
     private TransactionParty transactionParty;
 
     //

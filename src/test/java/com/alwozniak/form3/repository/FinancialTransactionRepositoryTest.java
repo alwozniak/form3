@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -75,6 +76,17 @@ public class FinancialTransactionRepositoryTest {
                 .orElseThrow(RuntimeException::new);
 
         assertThat(fetchedTransaction.getAttributes(), notNullValue());
+    }
+
+    @Test
+    public void shouldFindAllPaymentTransactions() {
+        transactionRepository.save(FinancialTransaction.newPayment(UUID.randomUUID()));
+        transactionRepository.save(FinancialTransaction.newPayment(UUID.randomUUID()));
+        transactionRepository.save(FinancialTransaction.newPayment(UUID.randomUUID()));
+
+        List<FinancialTransaction> payments = transactionRepository.findAllPayments();
+
+        assertThat(payments.size(), is(3));
     }
 
     //

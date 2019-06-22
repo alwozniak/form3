@@ -24,12 +24,6 @@ public class FinancialTransactionAttributesRepositoryTests {
     @Autowired
     private FinancialTransactionRepository transactionRepository;
 
-    @Autowired
-    private ForeignExchangeInfoRepository fxInfoRepository;
-
-    @Autowired
-    private ChargesInformationRepository chargesInformationRepository;
-
     @Test
     public void shouldCorrectlyFetchDebtorAndBeneficiaryPartiesFromPersistedAttributesInstance() {
         String beneficiaryName = "Alice Beneficiary";
@@ -60,7 +54,6 @@ public class FinancialTransactionAttributesRepositoryTests {
                 .withForeignExchangeInfo(foreignExchangeInfo)
                 .build();
         foreignExchangeInfo.setFinancialTransactionAttributes(attributes);
-        fxInfoRepository.save(foreignExchangeInfo);
         FinancialTransactionAttributes persistedAttributes = repository.save(attributes);
 
         FinancialTransactionAttributes fetchedAttributes = fetchAttributesOrThrowException(persistedAttributes);
@@ -89,7 +82,6 @@ public class FinancialTransactionAttributesRepositoryTests {
                 .withChargesInformation(chargesInformation)
                 .build();
         chargesInformation.setFinancialTransactionAttributes(attributes);
-        chargesInformationRepository.save(chargesInformation);
         FinancialTransactionAttributes persistedAttributes = repository.save(attributes);
 
         FinancialTransactionAttributes fetchedAttributes = fetchAttributesOrThrowException(persistedAttributes);
