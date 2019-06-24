@@ -147,11 +147,11 @@ public class FinancialTransactionAttributes {
     private String paymentPurpose;
 
     @Column(name = "payment_scheme")
-    @Enumerated(EnumType.ORDINAL)
+    @Enumerated(EnumType.STRING)
     private PaymentScheme paymentScheme;
 
     @Column(name = "payment_type")
-    @Enumerated(EnumType.ORDINAL)
+    @Enumerated(EnumType.STRING)
     private PaymentType paymentType;
 
     @Column(name = "processing_date")
@@ -162,11 +162,11 @@ public class FinancialTransactionAttributes {
     private String reference;
 
     @Column(name = "scheme_payment_sub_type")
-    @Enumerated(EnumType.ORDINAL)
+    @Enumerated(EnumType.STRING)
     private SchemePaymentSubType schemePaymentSubType;
 
     @Column(name = "scheme_payment_type")
-    @Enumerated(EnumType.ORDINAL)
+    @Enumerated(EnumType.STRING)
     private SchemePaymentType schemePaymentType;
 
     @OneToOne(cascade = CascadeType.ALL)
@@ -242,7 +242,7 @@ public class FinancialTransactionAttributes {
         return transaction;
     }
 
-    public double getAmount() {
+    public Double getAmount() {
         return amount;
     }
 

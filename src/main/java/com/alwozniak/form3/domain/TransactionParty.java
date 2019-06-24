@@ -53,8 +53,7 @@ public class TransactionParty {
     @Column(name = "transaction_party_name")
     private String name;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @PrimaryKeyJoinColumn
+    @OneToOne(cascade = CascadeType.ALL)
     private AccountData accountData;
 
     @Column(name = "address")
@@ -66,10 +65,12 @@ public class TransactionParty {
     @Column(name = "bank_id_code")
     private String bankIdCode;
 
-    @OneToOne(mappedBy = "beneficiaryParty")
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "beneficiary_party_id")
     private FinancialTransactionAttributes financialTransactionAttributesForBeneficiary;
 
-    @OneToOne(mappedBy = "debtorParty")
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "debtor_party_id")
     private FinancialTransactionAttributes financialTransactionAttributesForDebtor;
 
     //

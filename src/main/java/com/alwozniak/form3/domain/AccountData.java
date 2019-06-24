@@ -1,6 +1,6 @@
 package com.alwozniak.form3.domain;
 
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.util.UUID;
@@ -48,6 +48,9 @@ public class AccountData {
     }
 
     @Id
+    @Column(name = "id", columnDefinition = "uuid")
+    @GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "uuid2")
     private UUID id;
 
     @Column(name = "account_name")
@@ -62,7 +65,7 @@ public class AccountData {
     @Column(name = "account_type")
     private Integer accountType;
 
-    @OneToOne(mappedBy = "accountData")
+    @OneToOne
     private TransactionParty transactionParty;
 
     //

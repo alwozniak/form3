@@ -1,10 +1,10 @@
 package com.alwozniak.form3.service;
 
 import com.alwozniak.form3.domain.FinancialTransaction;
-import com.alwozniak.form3.service.exception.PaymentNotFoundException;
 import com.alwozniak.form3.repository.FinancialTransactionRepository;
 import com.alwozniak.form3.resources.PaymentsListResource;
 import com.alwozniak.form3.resources.SinglePaymentResource;
+import com.alwozniak.form3.service.exception.PaymentNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

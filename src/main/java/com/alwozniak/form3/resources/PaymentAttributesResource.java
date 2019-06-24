@@ -1,11 +1,17 @@
 package com.alwozniak.form3.resources;
 
 import com.alwozniak.form3.domain.FinancialTransactionAttributes;
+import com.alwozniak.form3.domain.FinancialTransactionAttributes.PaymentScheme;
+import com.alwozniak.form3.domain.FinancialTransactionAttributes.PaymentType;
+import com.alwozniak.form3.domain.FinancialTransactionAttributes.SchemePaymentSubType;
+import com.alwozniak.form3.domain.FinancialTransactionAttributes.SchemePaymentType;
+import com.alwozniak.form3.domain.TransactionParty;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.CaseUtils;
 
 import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class PaymentAttributesResource {
 
@@ -49,17 +55,29 @@ public class PaymentAttributesResource {
 
     @JsonProperty("payment_scheme")
     public String getPaymentScheme() {
-        return attributes.getPaymentScheme().name();
+        PaymentScheme paymentScheme = attributes.getPaymentScheme();
+        if (paymentScheme == null) {
+            return null;
+        }
+        return paymentScheme.name();
     }
 
     @JsonProperty("payment_type")
     public String getPaymentType() {
-        return StringUtils.capitalize(attributes.getPaymentType().name().toLowerCase());
+        PaymentType paymentType = attributes.getPaymentType();
+        if (paymentType == null) {
+             return null;
+        }
+        return StringUtils.capitalize(paymentType.name().toLowerCase());
     }
 
     @JsonProperty("processing_date")
     public String getProcessingDate() {
-        return DATE_FORMAT.format(attributes.getProcessingDate());
+        Date processingDate = attributes.getProcessingDate();
+        if (processingDate == null) {
+            return null;
+        }
+        return DATE_FORMAT.format(processingDate);
     }
 
     @JsonProperty("reference")
@@ -69,12 +87,29 @@ public class PaymentAttributesResource {
 
     @JsonProperty("scheme_payment_type")
     public String getSchemePaymentType() {
-        return toCamelCase(attributes.getSchemePaymentType().name());
+        SchemePaymentType schemePaymentType = attributes.getSchemePaymentType();
+        if (schemePaymentType == null) {
+            return null;
+        }
+        return toCamelCase(schemePaymentType.name());
     }
 
     @JsonProperty("scheme_payment_sub_type")
     public String getSchemePaymentSubType() {
-        return toCamelCase(attributes.getSchemePaymentSubType().name());
+        SchemePaymentSubType schemePaymentSubType = attributes.getSchemePaymentSubType();
+        if (schemePaymentSubType == null) {
+            return null;
+        }
+        return toCamelCase(schemePaymentSubType.name());
+    }
+
+    @JsonProperty("beneficiary_party")
+    public TransactionPartyResource getBeneficiaryParty() {
+        TransactionParty beneficiaryParty = attributes.getBeneficiaryParty();
+        if (beneficiaryParty == null) {
+            return null;
+        }
+        return new TransactionPartyResource(beneficiaryParty);
     }
 
     private static String toCamelCase(String name) {

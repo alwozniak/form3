@@ -1,11 +1,13 @@
 package com.alwozniak.form3.controller;
 
+import com.alwozniak.form3.domain.AccountData;
 import com.alwozniak.form3.domain.FinancialTransaction;
 import com.alwozniak.form3.domain.FinancialTransactionAttributes;
 import com.alwozniak.form3.domain.FinancialTransactionAttributes.PaymentScheme;
 import com.alwozniak.form3.domain.FinancialTransactionAttributes.PaymentType;
 import com.alwozniak.form3.domain.FinancialTransactionAttributes.SchemePaymentSubType;
 import com.alwozniak.form3.domain.FinancialTransactionAttributes.SchemePaymentType;
+import com.alwozniak.form3.domain.TransactionParty;
 import com.alwozniak.form3.repository.FinancialTransactionRepository;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,8 +23,7 @@ import java.util.Date;
 import java.util.UUID;
 
 import static com.alwozniak.form3.util.TestUtils.getDateOf;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -36,6 +37,7 @@ public class PaymentsControllerTests {
 
     @Autowired
     private MockMvc mockMvc;
+    public static final String PATH_TO_ATTRIBUTES = "$.data.attributes";
 
     @Before
     public void setUp() {
@@ -132,5 +134,46 @@ public class PaymentsControllerTests {
                 .andExpect(jsonPath(pathToAttributes + ".reference", is(reference)))
                 .andExpect(jsonPath(pathToAttributes + ".scheme_payment_sub_type", is("InternetBanking")))
                 .andExpect(jsonPath(pathToAttributes + ".scheme_payment_type", is("ImmediatePayment")));
+    }
+
+    @Test
+    public void shouldReturnTransactionPartyResourcesForExistingPaymentWithBeneficiaryParty() throws Exception {
+        String beneficiaryName = "Wilfred Jeremiah Owens";
+        String beneficiaryAddress = "1 The Beneficiary Localtown SE2";
+        String beneficiaryBankId = "403000";
+        String beneficiaryBankIdCode = "GBDSC";
+        String beneficiaryAccountName = "W Owens";
+        String beneficiaryAccountNumber = "31926819";
+        int beneficiaryAccountType = 0;
+        FinancialTransaction transaction = FinancialTransaction.newPayment(UUID.randomUUID());
+        AccountData beneficiaryAccountData = AccountData.builder(beneficiaryAccountName)
+                .withBbanNumber(beneficiaryAccountNumber)
+                .withType(beneficiaryAccountType)
+                .build();
+        TransactionParty beneficiary = TransactionParty.builder()
+                .withName(beneficiaryName)
+                .withAddress(beneficiaryAddress)
+                .withBankIdData(beneficiaryBankId, beneficiaryBankIdCode)
+                .withAccountData(beneficiaryAccountData)
+                .build();
+        FinancialTransactionAttributes attributesWithBeneficiary = FinancialTransactionAttributes.builder(transaction)
+                .withBeneficiary(beneficiary)
+                .build();
+        transaction.setAttributes(attributesWithBeneficiary);
+        FinancialTransaction persistedPayment = repository.save(transaction);
+        UUID existingPaymentId = persistedPayment.getId();
+
+        String pathToBeneficiary = PATH_TO_ATTRIBUTES + ".beneficiary_party";
+        mockMvc.perform(get("/payments/" + existingPaymentId.toString()).accept(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath(pathToBeneficiary, notNullValue()))
+                .andExpect(jsonPath(pathToBeneficiary + ".account_name", is(beneficiaryAccountName)))
+                .andExpect(jsonPath(pathToBeneficiary + ".account_number", is(beneficiaryAccountNumber)))
+        .andExpect(jsonPath(pathToBeneficiary + ".account_number_code", is("BBAN")))
+        .andExpect(jsonPath(pathToBeneficiary + ".account_type", is(beneficiaryAccountType)))
+        .andExpect(jsonPath(pathToBeneficiary + ".address", is(beneficiaryAddress)))
+        .andExpect(jsonPath(pathToBeneficiary + ".bank_id", is(beneficiaryBankId)))
+        .andExpect(jsonPath(pathToBeneficiary + ".bank_id_code", is (beneficiaryBankIdCode)))
+        .andExpect(jsonPath(pathToBeneficiary + ".name", is(beneficiaryName)));
     }
 }
