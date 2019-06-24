@@ -177,7 +177,9 @@ public class FinancialTransactionAttributes {
     @JoinColumn(name = "debtor_party_id")
     private TransactionParty debtorParty;
 
-    @OneToOne(mappedBy = "financialTransactionAttributes", cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "foreign_exchange_info_id",
+            foreignKey = @ForeignKey(name = "fk_foreignExchangeInfo_financialTransactionAttributes"))
     private ForeignExchangeInfo foreignExchangeInfo;
 
     @OneToOne(mappedBy = "financialTransactionAttributes", cascade = CascadeType.ALL)

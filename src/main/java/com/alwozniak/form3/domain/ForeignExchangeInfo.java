@@ -27,9 +27,7 @@ public class ForeignExchangeInfo {
     @Column(name = "original_currency")
     private String originalCurrency;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "financial_transaction_attributes_id",
-            foreignKey = @ForeignKey(name = "fk_foreignExchangeInfo_financialTransactionAttributes"))
+    @OneToOne(mappedBy = "foreignExchangeInfo")
     private FinancialTransactionAttributes financialTransactionAttributes;
 
     //

@@ -5,6 +5,7 @@ import com.alwozniak.form3.domain.FinancialTransactionAttributes.PaymentScheme;
 import com.alwozniak.form3.domain.FinancialTransactionAttributes.PaymentType;
 import com.alwozniak.form3.domain.FinancialTransactionAttributes.SchemePaymentSubType;
 import com.alwozniak.form3.domain.FinancialTransactionAttributes.SchemePaymentType;
+import com.alwozniak.form3.domain.ForeignExchangeInfo;
 import com.alwozniak.form3.domain.TransactionParty;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
@@ -119,6 +120,15 @@ public class PaymentAttributesResource {
             return null;
         }
         return new TransactionPartyResource(debtorParty);
+    }
+
+    @JsonProperty("fx")
+    public ForeignExchangeInfoResource getFx() {
+        ForeignExchangeInfo foreignExchangeInfo = attributes.getForeignExchangeInfo();
+        if (foreignExchangeInfo == null) {
+            return null;
+        }
+        return new ForeignExchangeInfoResource(foreignExchangeInfo);
     }
 
     private static String toCamelCase(String name) {

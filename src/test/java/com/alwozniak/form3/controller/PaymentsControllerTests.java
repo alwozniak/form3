@@ -1,13 +1,10 @@
 package com.alwozniak.form3.controller;
 
-import com.alwozniak.form3.domain.AccountData;
-import com.alwozniak.form3.domain.FinancialTransaction;
-import com.alwozniak.form3.domain.FinancialTransactionAttributes;
+import com.alwozniak.form3.domain.*;
 import com.alwozniak.form3.domain.FinancialTransactionAttributes.PaymentScheme;
 import com.alwozniak.form3.domain.FinancialTransactionAttributes.PaymentType;
 import com.alwozniak.form3.domain.FinancialTransactionAttributes.SchemePaymentSubType;
 import com.alwozniak.form3.domain.FinancialTransactionAttributes.SchemePaymentType;
-import com.alwozniak.form3.domain.TransactionParty;
 import com.alwozniak.form3.repository.FinancialTransactionRepository;
 import org.junit.Before;
 import org.junit.Test;
@@ -213,5 +210,31 @@ public class PaymentsControllerTests {
                 .andExpect(jsonPath(pathToDebtor + ".bank_id", is(debtorBankId)))
                 .andExpect(jsonPath(pathToDebtor + ".bank_id_code", is (debtorBankIdCode)))
                 .andExpect(jsonPath(pathToDebtor + ".name", is(debtorName)));
+    }
+
+    @Test
+    public void shouldReturnForeignExchangeInfoForExistingTransactionContainingIt() throws Exception {
+        String contractReference = "FX123";
+        Double exchangeRate = 2.00;
+        Double originalAmount = 123.45;
+        String originalCurrency = "USD";
+        ForeignExchangeInfo foreignExchangeInfo = new ForeignExchangeInfo(contractReference, exchangeRate,
+                originalAmount, originalCurrency);
+        FinancialTransaction transaction = FinancialTransaction.newPayment(UUID.randomUUID());
+        FinancialTransactionAttributes attributes = FinancialTransactionAttributes.builder(transaction)
+                .withForeignExchangeInfo(foreignExchangeInfo)
+                .build();
+        transaction.setAttributes(attributes);
+        FinancialTransaction persistedPayment = repository.save(transaction);
+        UUID existingPaymentId = persistedPayment.getId();
+
+        String pathToFx = PATH_TO_ATTRIBUTES + ".fx";
+        mockMvc.perform(get("/payments/" + existingPaymentId.toString()).accept(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath(pathToFx, notNullValue()))
+                .andExpect(jsonPath(pathToFx + ".contract_reference", is(contractReference)))
+                .andExpect(jsonPath(pathToFx + ".exchange_rate", is("2.00000")))
+                .andExpect(jsonPath(pathToFx + ".original_amount", is("123.45")))
+                .andExpect(jsonPath(pathToFx + ".original_currency", is(originalCurrency)));
     }
 }
