@@ -176,4 +176,42 @@ public class PaymentsControllerTests {
         .andExpect(jsonPath(pathToBeneficiary + ".bank_id_code", is (beneficiaryBankIdCode)))
         .andExpect(jsonPath(pathToBeneficiary + ".name", is(beneficiaryName)));
     }
+
+    @Test
+    public void shouldReturnTransactionPartyResourcesForExistingPaymentWithDebtorParty() throws Exception {
+        String debtorName = "Emelia Jane Brown";
+        String debtorAddress = "1 The Beneficiary Localtown SE2";
+        String debtorBankId = "403000";
+        String debtorBankIdCode = "GBDSC";
+        String debtorAccountName = "W Owens";
+        String debtorAccountNumber = "GB29XABC10161234567801";
+        FinancialTransaction transaction = FinancialTransaction.newPayment(UUID.randomUUID());
+        AccountData debtorAccountData = AccountData.builder(debtorAccountName)
+                .withIbanNumber(debtorAccountNumber)
+                .build();
+        TransactionParty debtor = TransactionParty.builder()
+                .withName(debtorName)
+                .withAddress(debtorAddress)
+                .withBankIdData(debtorBankId, debtorBankIdCode)
+                .withAccountData(debtorAccountData)
+                .build();
+        FinancialTransactionAttributes attributesWithDebtor = FinancialTransactionAttributes.builder(transaction)
+                .withDebtor(debtor)
+                .build();
+        transaction.setAttributes(attributesWithDebtor);
+        FinancialTransaction persistedPayment = repository.save(transaction);
+        UUID existingPaymentId = persistedPayment.getId();
+
+        String pathToDebtor = PATH_TO_ATTRIBUTES + ".debtor_party";
+        mockMvc.perform(get("/payments/" + existingPaymentId.toString()).accept(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath(pathToDebtor, notNullValue()))
+                .andExpect(jsonPath(pathToDebtor + ".account_name", is(debtorAccountName)))
+                .andExpect(jsonPath(pathToDebtor + ".account_number", is(debtorAccountNumber)))
+                .andExpect(jsonPath(pathToDebtor + ".account_number_code", is("IBAN")))
+                .andExpect(jsonPath(pathToDebtor + ".address", is(debtorAddress)))
+                .andExpect(jsonPath(pathToDebtor + ".bank_id", is(debtorBankId)))
+                .andExpect(jsonPath(pathToDebtor + ".bank_id_code", is (debtorBankIdCode)))
+                .andExpect(jsonPath(pathToDebtor + ".name", is(debtorName)));
+    }
 }

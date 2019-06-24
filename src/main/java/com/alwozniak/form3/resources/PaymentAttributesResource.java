@@ -112,6 +112,15 @@ public class PaymentAttributesResource {
         return new TransactionPartyResource(beneficiaryParty);
     }
 
+    @JsonProperty("debtor_party")
+    public TransactionPartyResource getDebtorParty() {
+        TransactionParty debtorParty = attributes.getDebtorParty();
+        if (debtorParty == null) {
+            return null;
+        }
+        return new TransactionPartyResource(debtorParty);
+    }
+
     private static String toCamelCase(String name) {
         return CaseUtils.toCamelCase(name.toLowerCase(), true, '_');
     }
