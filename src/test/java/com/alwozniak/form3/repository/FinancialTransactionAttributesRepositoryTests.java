@@ -94,6 +94,29 @@ public class FinancialTransactionAttributesRepositoryTests {
         assertThat(chargesInformationFromAttributes.getSenderCharges().size(), is(2));
     }
 
+    @Test
+    public void shouldCorrectlyFetchSponsorPartyFromSavedAttributes() {
+        String bankId = "123123";
+        String bankIdCode = "GBDSC";
+        String accountNumber = "56781234";
+        AccountData accountData = new AccountData(accountNumber);
+        TransactionParty sponsorParty = TransactionParty.builder()
+                .withBankIdData(bankId, bankIdCode)
+                .withAccountData(accountData)
+                .build();
+        FinancialTransactionAttributes attributes = FinancialTransactionAttributes.builder(getPersistedTransaction())
+                .withSponsorParty(sponsorParty)
+                .build();
+        FinancialTransactionAttributes persistedAttributes = repository.save(attributes);
+
+        FinancialTransactionAttributes fetchedAttributes = fetchAttributesOrThrowException(persistedAttributes);
+
+        TransactionParty extractedSponsorParty = fetchedAttributes.getSponsorParty();
+        assertThat(extractedSponsorParty.getAccountNumber(), is(accountNumber));
+        assertThat(extractedSponsorParty.getBankId(), is(bankId));
+        assertThat(extractedSponsorParty.getBankIdCode(), is(bankIdCode));
+    }
+
     //
     // Helper methods.
     //

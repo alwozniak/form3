@@ -87,6 +87,10 @@ public class AccountData {
         // For Hibernate.
     }
 
+    public AccountData(String accountNumber) {
+        this.accountNumber = accountNumber;
+    }
+
     //
     // Field accessors.
     //

@@ -114,6 +114,12 @@ public class PaymentAttributesResource {
         return chargesInformation == null ? null : new ChargesInformationResource(chargesInformation);
     }
 
+    @JsonProperty("sponsor_party")
+    public SponsorPartyResource getSponsorPartyResource() {
+        TransactionParty sponsorParty = attributes.getSponsorParty();
+        return sponsorParty == null ? null : new SponsorPartyResource(sponsorParty);
+    }
+
     private static String toCamelCase(String name) {
         return CaseUtils.toCamelCase(name.toLowerCase(), true, '_');
     }

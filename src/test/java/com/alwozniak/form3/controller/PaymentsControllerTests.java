@@ -267,4 +267,31 @@ public class PaymentsControllerTests {
                 .andExpect(jsonPath(pathToChargesInformation + ".sender_charges[?(@.currency=='GBP')].amount",
                         contains("8.00")));
     }
+
+    @Test
+    public void shouldReturnTransactionPartyResourcesForExistingPaymentWithSponsorParty() throws Exception {
+        String debtorBankId = "403000";
+        String debtorBankIdCode = "GBDSC";
+        String debtorAccountNumber = "GB29XABC10161234567801";
+        FinancialTransaction transaction = FinancialTransaction.newPayment(UUID.randomUUID());
+        AccountData debtorAccountData = new AccountData(debtorAccountNumber);
+        TransactionParty sponsorParty = TransactionParty.builder()
+                .withBankIdData(debtorBankId, debtorBankIdCode)
+                .withAccountData(debtorAccountData)
+                .build();
+        FinancialTransactionAttributes attributesWithSponsor = FinancialTransactionAttributes.builder(transaction)
+                .withSponsorParty(sponsorParty)
+                .build();
+        transaction.setAttributes(attributesWithSponsor);
+        FinancialTransaction persistedPayment = repository.save(transaction);
+        UUID existingPaymentId = persistedPayment.getId();
+
+        String pathToSponsor = PATH_TO_ATTRIBUTES + ".sponsor_party";
+        mockMvc.perform(get("/payments/" + existingPaymentId.toString()).accept(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath(pathToSponsor, notNullValue()))
+                .andExpect(jsonPath(pathToSponsor + ".account_number", is(debtorAccountNumber)))
+                .andExpect(jsonPath(pathToSponsor + ".bank_id", is(debtorBankId)))
+                .andExpect(jsonPath(pathToSponsor + ".bank_id_code", is (debtorBankIdCode)));
+    }
 }
