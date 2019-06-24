@@ -18,19 +18,13 @@ public class ForeignExchangeInfoResource {
     @JsonProperty("exchange_rate")
     public String getExchangeRate() {
         Double exchangeRate = foreignExchangeInfo.getExchangeRate();
-        if (exchangeRate == null) {
-            return null;
-        }
-        return String.format("%.5f", exchangeRate);
+        return exchangeRate == null ? null : String.format("%.5f", exchangeRate);
     }
 
     @JsonProperty("original_amount")
     public String getOriginalAmount() {
         Double originalAmount = foreignExchangeInfo.getOriginalAmount();
-        if (originalAmount == null) {
-            return null;
-        }
-        return String.format("%.2f", originalAmount);
+        return originalAmount == null ? null : String.format("%.2f", originalAmount);
     }
 
     @JsonProperty("original_currency")

@@ -1,5 +1,6 @@
 package com.alwozniak.form3.resources;
 
+import com.alwozniak.form3.domain.ChargesInformation;
 import com.alwozniak.form3.domain.FinancialTransactionAttributes;
 import com.alwozniak.form3.domain.FinancialTransactionAttributes.PaymentScheme;
 import com.alwozniak.form3.domain.FinancialTransactionAttributes.PaymentType;
@@ -57,28 +58,19 @@ public class PaymentAttributesResource {
     @JsonProperty("payment_scheme")
     public String getPaymentScheme() {
         PaymentScheme paymentScheme = attributes.getPaymentScheme();
-        if (paymentScheme == null) {
-            return null;
-        }
-        return paymentScheme.name();
+        return paymentScheme == null ? null : paymentScheme.name();
     }
 
     @JsonProperty("payment_type")
     public String getPaymentType() {
         PaymentType paymentType = attributes.getPaymentType();
-        if (paymentType == null) {
-             return null;
-        }
-        return StringUtils.capitalize(paymentType.name().toLowerCase());
+        return paymentType == null ? null : StringUtils.capitalize(paymentType.name().toLowerCase());
     }
 
     @JsonProperty("processing_date")
     public String getProcessingDate() {
         Date processingDate = attributes.getProcessingDate();
-        if (processingDate == null) {
-            return null;
-        }
-        return DATE_FORMAT.format(processingDate);
+        return processingDate == null ? null : DATE_FORMAT.format(processingDate);
     }
 
     @JsonProperty("reference")
@@ -89,46 +81,37 @@ public class PaymentAttributesResource {
     @JsonProperty("scheme_payment_type")
     public String getSchemePaymentType() {
         SchemePaymentType schemePaymentType = attributes.getSchemePaymentType();
-        if (schemePaymentType == null) {
-            return null;
-        }
-        return toCamelCase(schemePaymentType.name());
+        return schemePaymentType == null ? null : toCamelCase(schemePaymentType.name());
     }
 
     @JsonProperty("scheme_payment_sub_type")
     public String getSchemePaymentSubType() {
         SchemePaymentSubType schemePaymentSubType = attributes.getSchemePaymentSubType();
-        if (schemePaymentSubType == null) {
-            return null;
-        }
-        return toCamelCase(schemePaymentSubType.name());
+        return schemePaymentSubType == null ? null : toCamelCase(schemePaymentSubType.name());
     }
 
     @JsonProperty("beneficiary_party")
     public TransactionPartyResource getBeneficiaryParty() {
         TransactionParty beneficiaryParty = attributes.getBeneficiaryParty();
-        if (beneficiaryParty == null) {
-            return null;
-        }
-        return new TransactionPartyResource(beneficiaryParty);
+        return beneficiaryParty == null ? null : new TransactionPartyResource(beneficiaryParty);
     }
 
     @JsonProperty("debtor_party")
     public TransactionPartyResource getDebtorParty() {
         TransactionParty debtorParty = attributes.getDebtorParty();
-        if (debtorParty == null) {
-            return null;
-        }
-        return new TransactionPartyResource(debtorParty);
+        return debtorParty == null ? null : new TransactionPartyResource(debtorParty);
     }
 
     @JsonProperty("fx")
     public ForeignExchangeInfoResource getFx() {
         ForeignExchangeInfo foreignExchangeInfo = attributes.getForeignExchangeInfo();
-        if (foreignExchangeInfo == null) {
-            return null;
-        }
-        return new ForeignExchangeInfoResource(foreignExchangeInfo);
+        return foreignExchangeInfo == null ? null : new ForeignExchangeInfoResource(foreignExchangeInfo);
+    }
+
+    @JsonProperty("charges_information")
+    public ChargesInformationResource getChargesInformation() {
+        ChargesInformation chargesInformation = attributes.getChargesInformation();
+        return chargesInformation == null ? null : new ChargesInformationResource(chargesInformation);
     }
 
     private static String toCamelCase(String name) {

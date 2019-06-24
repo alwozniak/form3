@@ -1,6 +1,7 @@
 package com.alwozniak.form3.controller;
 
 import com.alwozniak.form3.domain.*;
+import com.alwozniak.form3.domain.ChargesInformation.ChargeType;
 import com.alwozniak.form3.domain.FinancialTransactionAttributes.PaymentScheme;
 import com.alwozniak.form3.domain.FinancialTransactionAttributes.PaymentType;
 import com.alwozniak.form3.domain.FinancialTransactionAttributes.SchemePaymentSubType;
@@ -236,5 +237,34 @@ public class PaymentsControllerTests {
                 .andExpect(jsonPath(pathToFx + ".exchange_rate", is("2.00000")))
                 .andExpect(jsonPath(pathToFx + ".original_amount", is("123.45")))
                 .andExpect(jsonPath(pathToFx + ".original_currency", is(originalCurrency)));
+    }
+
+    @Test
+    public void shouldReturnChargesInformationResourceForExistingPaymentWithChargesInformation() throws Exception {
+        ChargesInformation chargesInformation = ChargesInformation.builder(ChargeType.SHARED)
+                .withSenderCharge(12.67, "USD")
+                .withSenderCharge(8.00, "GBP")
+                .withReceiverCharge(5.43, "USD")
+                .build();
+        FinancialTransaction transaction = FinancialTransaction.newPayment(UUID.randomUUID());
+        FinancialTransactionAttributes attributes = FinancialTransactionAttributes.builder(transaction)
+                .withChargesInformation(chargesInformation)
+                .build();
+        transaction.setAttributes(attributes);
+        FinancialTransaction persistedPayment = repository.save(transaction);
+        UUID existingPaymentId = persistedPayment.getId();
+
+        String pathToChargesInformation = PATH_TO_ATTRIBUTES + ".charges_information";
+        mockMvc.perform(get("/payments/" + existingPaymentId.toString()).accept(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath(pathToChargesInformation, notNullValue()))
+                .andExpect(jsonPath(pathToChargesInformation + ".bearer_code", is("SHAR")))
+                .andExpect(jsonPath(pathToChargesInformation + ".receiver_charges_amount", is("5.43")))
+                .andExpect(jsonPath(pathToChargesInformation + ".receiver_charges_currency", is("USD")))
+                .andExpect(jsonPath(pathToChargesInformation + ".sender_charges.length()", is(2)))
+                .andExpect(jsonPath(pathToChargesInformation + ".sender_charges[?(@.currency=='USD')].amount",
+                        contains("12.67")))
+                .andExpect(jsonPath(pathToChargesInformation + ".sender_charges[?(@.currency=='GBP')].amount",
+                        contains("8.00")));
     }
 }

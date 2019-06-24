@@ -60,9 +60,7 @@ public class ChargesInformation {
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<ChargeInfoForCurrency> senderCharges;
 
-    @OneToOne
-    @JoinColumn(name = "financial_transaction_attributes_id",
-            foreignKey = @ForeignKey(name = "fk_chargesInformation_financial_transaction_attributes"))
+    @OneToOne(mappedBy = "chargesInformation")
     private FinancialTransactionAttributes financialTransactionAttributes;
 
     //
