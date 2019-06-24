@@ -1,6 +1,7 @@
 package com.alwozniak.form3.resources;
 
 import com.alwozniak.form3.domain.FinancialTransaction;
+import com.alwozniak.form3.domain.FinancialTransactionAttributes;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
 
@@ -30,5 +31,14 @@ public class PaymentResourceData {
     @JsonProperty("version")
     public Integer getVersion() {
         return payment.getVersion();
+    }
+
+    @JsonProperty("attributes")
+    public PaymentAttributesResource getPaymentAttributes() {
+        FinancialTransactionAttributes attributes = payment.getAttributes();
+        if (attributes == null) {
+            return null;
+        }
+        return new PaymentAttributesResource(attributes);
     }
 }

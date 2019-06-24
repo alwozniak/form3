@@ -1,15 +1,13 @@
 package com.alwozniak.form3.domain;
 
-import com.alwozniak.form3.domain.FinancialTransactionAttributes.PaymentScheme;
+import com.alwozniak.form3.domain.FinancialTransactionAttributes.*;
 import org.junit.Test;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.Date;
 import java.util.UUID;
 
 import static com.alwozniak.form3.domain.FinancialTransactionAttributes.*;
+import static com.alwozniak.form3.util.TestUtils.getDateOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -78,15 +76,5 @@ public class FinancialTransactionAttributesTests {
 
         assertThat(attributes.getBeneficiaryParty(), is(beneficiary));
         assertThat(attributes.getDebtorParty(), is(debtor));
-    }
-
-    //
-    // Helper methods.
-    //
-
-    private Date getDateOf(int dayOfMonth, int month, int year) {
-        LocalDate localDate = LocalDate.of(year, month, dayOfMonth);
-        Instant instant = Instant.from(localDate.atStartOfDay(ZoneId.systemDefault()));
-        return Date.from(instant);
     }
 }
