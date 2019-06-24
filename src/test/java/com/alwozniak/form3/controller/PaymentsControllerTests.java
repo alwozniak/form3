@@ -17,8 +17,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static com.alwozniak.form3.util.TestUtils.getDateOf;
 import static org.hamcrest.Matchers.*;
@@ -66,18 +69,22 @@ public class PaymentsControllerTests {
     }
 
     @Test
-    public void shouldCorrectlyfetchListOfMultiplePayments() throws Exception {
-        FinancialTransaction persistedPayment1 = repository.save(FinancialTransaction.newPayment(UUID.randomUUID()));
-        FinancialTransaction persistedPayment2 = repository.save(FinancialTransaction.newPayment(UUID.randomUUID()));
-        FinancialTransaction persistedPayment3 = repository.save(FinancialTransaction.newPayment(UUID.randomUUID()));
+    public void shouldCorrectlyFetchListOfMultiplePayments() throws Exception {
+        List<FinancialTransaction> transactions = new ArrayList<>();
+        int numberOfTransactions = 4;
+        for (int i = 0; i < numberOfTransactions; i++) {
+            transactions.add(repository.save(FinancialTransaction.newPayment(UUID.randomUUID())));
+        }
+        String[] transactionIds = transactions.stream()
+                .map(FinancialTransaction::getId)
+                .map(UUID::toString)
+                .toArray(String[]::new);
 
         mockMvc.perform(get("/payments").accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(jsonPath("$.data.length()", is(3)))
-                .andExpect(jsonPath("$.data..id", contains(persistedPayment1.getId().toString())))
-                .andExpect(jsonPath("$.data..id", contains(persistedPayment2.getId().toString())))
-                .andExpect(jsonPath("$.data..id", contains(persistedPayment3.getId().toString())));
+                .andExpect(jsonPath("$.data.length()", is(numberOfTransactions)))
+                .andExpect(jsonPath("$.data..id", contains(transactionIds)));
     }
 
     //
