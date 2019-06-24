@@ -19,104 +19,126 @@ public class PaymentAttributesResource {
 
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
-    private FinancialTransactionAttributes attributes;
+    private Double amount;
+    private String currency;
+    private String endToEndReference;
+    private String numericReference;
+    private String paymentId;
+    private PaymentScheme paymentScheme;
+    private String paymentPurpose;
+    private Date processingDate;
+    private String reference;
+    private PaymentType paymentType;
+    private SchemePaymentType schemePaymentType;
+    private SchemePaymentSubType schemePaymentSubType;
+    private TransactionParty beneficiaryParty;
+    private TransactionParty debtorParty;
+    private ForeignExchangeInfo foreignExchangeInfo;
+    private ChargesInformation chargesInformation;
+    private TransactionParty sponsorParty;
 
     public PaymentAttributesResource(FinancialTransactionAttributes attributes) {
-        this.attributes = attributes;
+        this.sponsorParty = attributes.getSponsorParty();
+        this.amount = attributes.getAmount();
+        this.currency = attributes.getCurrency();
+        this.endToEndReference = attributes.getEndToEndReference();
+        this.numericReference = attributes.getNumericReference();
+        this.paymentId = attributes.getPaymentId();
+        this.paymentScheme = attributes.getPaymentScheme();
+        this.paymentPurpose = attributes.getPaymentPurpose();
+        this.paymentType = attributes.getPaymentType();
+        this.processingDate = attributes.getProcessingDate();
+        this.reference = attributes.getReference();
+        this.schemePaymentType = attributes.getSchemePaymentType();
+        this.schemePaymentSubType = attributes.getSchemePaymentSubType();
+        this.beneficiaryParty = attributes.getBeneficiaryParty();
+        this.debtorParty = attributes.getDebtorParty();
+        this.foreignExchangeInfo = attributes.getForeignExchangeInfo();
+        this.chargesInformation = attributes.getChargesInformation();
     }
 
     @JsonProperty("amount")
     public Double getAmount() {
-        return attributes.getAmount();
+        return amount;
     }
 
     @JsonProperty("currency")
     public String getCurrency() {
-        return attributes.getCurrency();
+        return currency;
     }
 
     @JsonProperty("end_to_end_reference")
     public String getEndToEndReference() {
-        return attributes.getEndToEndReference();
+        return endToEndReference;
     }
 
     @JsonProperty("numeric_reference")
     public String getNumericReference() {
-        return attributes.getNumericReference();
+        return numericReference;
     }
 
     @JsonProperty("payment_id")
     public String getPaymentId() {
-        return attributes.getPaymentId();
+        return paymentId;
     }
 
     @JsonProperty("payment_purpose")
     public String getPaymentPurpose() {
-        return attributes.getPaymentPurpose();
+        return paymentPurpose;
     }
 
     @JsonProperty("payment_scheme")
     public String getPaymentScheme() {
-        PaymentScheme paymentScheme = attributes.getPaymentScheme();
         return paymentScheme == null ? null : paymentScheme.name();
     }
 
     @JsonProperty("payment_type")
     public String getPaymentType() {
-        PaymentType paymentType = attributes.getPaymentType();
         return paymentType == null ? null : StringUtils.capitalize(paymentType.name().toLowerCase());
     }
 
     @JsonProperty("processing_date")
     public String getProcessingDate() {
-        Date processingDate = attributes.getProcessingDate();
         return processingDate == null ? null : DATE_FORMAT.format(processingDate);
     }
 
     @JsonProperty("reference")
     public String getReference() {
-        return attributes.getReference();
+        return reference;
     }
 
     @JsonProperty("scheme_payment_type")
     public String getSchemePaymentType() {
-        SchemePaymentType schemePaymentType = attributes.getSchemePaymentType();
         return schemePaymentType == null ? null : toCamelCase(schemePaymentType.name());
     }
 
     @JsonProperty("scheme_payment_sub_type")
     public String getSchemePaymentSubType() {
-        SchemePaymentSubType schemePaymentSubType = attributes.getSchemePaymentSubType();
         return schemePaymentSubType == null ? null : toCamelCase(schemePaymentSubType.name());
     }
 
     @JsonProperty("beneficiary_party")
     public TransactionPartyResource getBeneficiaryParty() {
-        TransactionParty beneficiaryParty = attributes.getBeneficiaryParty();
         return beneficiaryParty == null ? null : new TransactionPartyResource(beneficiaryParty);
     }
 
     @JsonProperty("debtor_party")
     public TransactionPartyResource getDebtorParty() {
-        TransactionParty debtorParty = attributes.getDebtorParty();
         return debtorParty == null ? null : new TransactionPartyResource(debtorParty);
     }
 
     @JsonProperty("fx")
     public ForeignExchangeInfoResource getFx() {
-        ForeignExchangeInfo foreignExchangeInfo = attributes.getForeignExchangeInfo();
         return foreignExchangeInfo == null ? null : new ForeignExchangeInfoResource(foreignExchangeInfo);
     }
 
     @JsonProperty("charges_information")
     public ChargesInformationResource getChargesInformation() {
-        ChargesInformation chargesInformation = attributes.getChargesInformation();
         return chargesInformation == null ? null : new ChargesInformationResource(chargesInformation);
     }
 
     @JsonProperty("sponsor_party")
     public SponsorPartyResource getSponsorPartyResource() {
-        TransactionParty sponsorParty = attributes.getSponsorParty();
         return sponsorParty == null ? null : new SponsorPartyResource(sponsorParty);
     }
 

@@ -4,24 +4,29 @@ import com.alwozniak.form3.domain.TransactionParty;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class SponsorPartyResource {
-    private TransactionParty sponsorParty;
+
+    private final String bankIdCode;
+    private String bankId;
+    private String accountNumber;
 
     public SponsorPartyResource(TransactionParty sponsorParty) {
-        this.sponsorParty = sponsorParty;
+        bankIdCode = sponsorParty.getBankIdCode();
+        bankId = sponsorParty.getBankId();
+        accountNumber = sponsorParty.getAccountNumber();
     }
 
     @JsonProperty("account_number")
     public String getAccountNumber() {
-        return sponsorParty.getAccountNumber();
+        return accountNumber;
     }
 
     @JsonProperty("bank_id")
     public String getBankId() {
-        return sponsorParty.getBankId();
+        return bankId;
     }
 
     @JsonProperty("bank_id_code")
     public String getBankIdCode() {
-        return sponsorParty.getBankIdCode();
+        return bankIdCode;
     }
 }

@@ -3,7 +3,7 @@ package com.alwozniak.form3.resources;
 import com.alwozniak.form3.domain.FinancialTransaction;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class SinglePaymentResource extends PaymentsResource{
+public class SinglePaymentResource extends PaymentsResource {
 
     private final FinancialTransaction payment;
 
