@@ -54,6 +54,32 @@ public class PaymentsControllerTests {
                 .andExpect(content().json("{\"data\":[]}"));
     }
 
+    @Test
+    public void shouldCorrectlyFetchSingletonListOfPayments() throws Exception {
+        FinancialTransaction persistedPayment = repository.save(FinancialTransaction.newPayment(UUID.randomUUID()));
+
+        mockMvc.perform(get("/payments").accept(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("$.data.length()", is(1)))
+                .andExpect(jsonPath("$.data[0].id", is(persistedPayment.getId().toString())));
+    }
+
+    @Test
+    public void shouldCorrectlyfetchListOfMultiplePayments() throws Exception {
+        FinancialTransaction persistedPayment1 = repository.save(FinancialTransaction.newPayment(UUID.randomUUID()));
+        FinancialTransaction persistedPayment2 = repository.save(FinancialTransaction.newPayment(UUID.randomUUID()));
+        FinancialTransaction persistedPayment3 = repository.save(FinancialTransaction.newPayment(UUID.randomUUID()));
+
+        mockMvc.perform(get("/payments").accept(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("$.data.length()", is(3)))
+                .andExpect(jsonPath("$.data..id", contains(persistedPayment1.getId().toString())))
+                .andExpect(jsonPath("$.data..id", contains(persistedPayment2.getId().toString())))
+                .andExpect(jsonPath("$.data..id", contains(persistedPayment3.getId().toString())));
+    }
+
     //
     // Tests for GET /payments/:id.
     //
