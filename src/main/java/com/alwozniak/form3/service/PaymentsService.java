@@ -2,6 +2,7 @@ package com.alwozniak.form3.service;
 
 import com.alwozniak.form3.domain.FinancialTransaction;
 import com.alwozniak.form3.repository.FinancialTransactionRepository;
+import com.alwozniak.form3.resources.PaymentResourceData;
 import com.alwozniak.form3.resources.PaymentsListResource;
 import com.alwozniak.form3.resources.SinglePaymentResource;
 import com.alwozniak.form3.service.exception.PaymentNotFoundException;
@@ -26,5 +27,10 @@ public class PaymentsService {
         FinancialTransaction payment = financialTransactionRepository.findById(paymentId).orElseThrow(
                 () -> new PaymentNotFoundException("Payment with id " + paymentId + " not found"));
         return new SinglePaymentResource(payment);
+    }
+
+    public FinancialTransaction createNewPaymentFromResource(PaymentResourceData paymentResourceData) {
+        FinancialTransaction payment = FinancialTransaction.newPayment(paymentResourceData.getOrganisationId());
+        return financialTransactionRepository.save(payment);
     }
 }

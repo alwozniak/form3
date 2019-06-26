@@ -1,15 +1,17 @@
 package com.alwozniak.form3.controller;
 
 import com.alwozniak.form3.controller.exception.ResourceNotFoundException;
+import com.alwozniak.form3.domain.FinancialTransaction;
+import com.alwozniak.form3.resources.PaymentResourceData;
 import com.alwozniak.form3.resources.PaymentsResource;
 import com.alwozniak.form3.service.PaymentsService;
 import com.alwozniak.form3.service.exception.PaymentNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.UUID;
 
 @RestController
@@ -31,5 +33,13 @@ public class PaymentsController {
         } catch (PaymentNotFoundException e) {
             throw new ResourceNotFoundException(e.getMessage());
         }
+    }
+
+    @PostMapping(consumes = "application/json")
+    public ResponseEntity<?> postNewPayment(@RequestBody PaymentResourceData paymentResourceData) {
+        FinancialTransaction payment = paymentsService.createNewPaymentFromResource(paymentResourceData);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{paymentId}").buildAndExpand(payment.getId()).toUri();
+        return ResponseEntity.created(location).build();
     }
 }

@@ -24,9 +24,18 @@ public class PaymentResourceData {
         this.attributes = payment.getAttributes();
     }
 
+    public PaymentResourceData() {
+        // For Jackson.
+    }
+
     @JsonProperty("type")
     public String getType() {
         return transactionType == null ? null : StringUtils.capitalize(transactionType.name().toLowerCase());
+    }
+
+    @JsonProperty("type")
+    public void setTypeFromString(String transactionTypeString) {
+        this.transactionType = FinancialTransactionType.valueOf(transactionTypeString.toUpperCase());
     }
 
     @JsonProperty("id")
@@ -34,18 +43,32 @@ public class PaymentResourceData {
         return id.toString();
     }
 
-    @JsonProperty("organisation_id")
-    public String getOrganisationId() {
-        return organisationId == null ? null : organisationId.toString();
-    }
-
     @JsonProperty("version")
     public Integer getVersion() {
         return version;
     }
 
+    @JsonProperty("version")
+    public void setVersion(int version) {
+        this.version = version;
+    }
+
     @JsonProperty("attributes")
     public PaymentAttributesResource getPaymentAttributes() {
         return attributes == null ? null : new PaymentAttributesResource(attributes);
+    }
+
+    @JsonProperty("organisation_id")
+    public String getOrganisationIdAsString() {
+        return organisationId == null ? null : organisationId.toString();
+    }
+
+    @JsonProperty("organisation_id")
+    public void setOrganisationIdFromString(String organisationIdString) {
+        this.organisationId = UUID.fromString(organisationIdString);
+    }
+
+    public UUID getOrganisationId() {
+        return organisationId;
     }
 }

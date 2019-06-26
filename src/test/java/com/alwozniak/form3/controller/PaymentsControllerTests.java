@@ -21,11 +21,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static com.alwozniak.form3.util.TestUtils.getDateOf;
+import static com.alwozniak.form3.util.TestUtils.getTestResource;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringRunner.class)
@@ -326,5 +328,25 @@ public class PaymentsControllerTests {
                 .andExpect(jsonPath(pathToSponsor + ".account_number", is(debtorAccountNumber)))
                 .andExpect(jsonPath(pathToSponsor + ".bank_id", is(debtorBankId)))
                 .andExpect(jsonPath(pathToSponsor + ".bank_id_code", is (debtorBankIdCode)));
+    }
+
+    //
+    // Tests for POST /payments.
+    //
+
+    @Test
+    public void shouldPersistValidPaymentsResourceWithoutAttributes() throws Exception {
+        byte[] requestBody = getTestResource("payment-without-attributes.json");
+        String requestBodyAsString = new String(requestBody);
+
+        assertThat(repository.findAllPayments(), is(empty()));
+        mockMvc.perform(post("/payments").contentType(MediaType.APPLICATION_JSON_UTF8).content(requestBody))
+                .andExpect(status().isCreated());
+        List<FinancialTransaction> allPayments = repository.findAllPayments();
+        assertThat(allPayments.size(), is(1));
+        FinancialTransaction persistedPayment = allPayments.get(0);
+        assertThat(persistedPayment.getVersion(), is(0));
+        assertThat(persistedPayment.getTransactionType(), is(FinancialTransaction.FinancialTransactionType.PAYMENT));
+        assertThat(persistedPayment.getOrganisationId().toString(), is("743d5b63-8e6f-432e-a8fa-c5d8d2ee5fcb"));
     }
 }

@@ -1,11 +1,12 @@
 package com.alwozniak.form3.service;
 
 import com.alwozniak.form3.domain.FinancialTransaction;
-import com.alwozniak.form3.service.exception.PaymentNotFoundException;
+import com.alwozniak.form3.domain.FinancialTransaction.FinancialTransactionType;
 import com.alwozniak.form3.repository.FinancialTransactionRepository;
 import com.alwozniak.form3.resources.PaymentResourceData;
 import com.alwozniak.form3.resources.PaymentsListResource;
 import com.alwozniak.form3.resources.SinglePaymentResource;
+import com.alwozniak.form3.service.exception.PaymentNotFoundException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,8 +17,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -33,6 +34,10 @@ public class PaymentsServiceTests {
     public void setUp() {
         financialTransactionRepository.deleteAllInBatch();
     }
+
+    //
+    // Tests for creating resources from FinancialTransaction entities.
+    //
 
     @Test
     public void shouldCorrectlyConstructAResourceWithEmptyPaymentsList() {
@@ -72,6 +77,28 @@ public class PaymentsServiceTests {
         PaymentResourceData resourceData = resource.getData();
         assertThat(resourceData.getType(), is("Payment"));
         assertThat(resourceData.getId(), is(existingPayment.getId().toString()));
-        assertThat(resourceData.getOrganisationId(), is(organisationId.toString()));
+        assertThat(resourceData.getOrganisationId(), is(organisationId));
+    }
+
+    //
+    // Tests for creating new payment from PaymentResourceData.
+    //
+
+    @Test
+    public void shouldCreateNewPaymentFromPaymentResourceData() {
+        int version = 0;
+        UUID organisationId = UUID.randomUUID();
+        PaymentResourceData paymentResourceData = new PaymentResourceData();
+        paymentResourceData.setTypeFromString("Payment");
+        paymentResourceData.setVersion(version);
+        paymentResourceData.setOrganisationIdFromString(organisationId.toString());
+
+        FinancialTransaction payment = paymentsService.createNewPaymentFromResource(paymentResourceData);
+
+        assertThat(payment.getId(), notNullValue());
+        assertTrue(financialTransactionRepository.findById(payment.getId()).isPresent());
+        assertThat(payment.getVersion(), is(version));
+        assertThat(payment.getTransactionType(), is(FinancialTransactionType.PAYMENT));
+        assertThat(payment.getOrganisationId(), is(organisationId));
     }
 }
