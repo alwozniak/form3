@@ -210,7 +210,8 @@ public class FinancialTransactionAttributes {
         // For Hibernate.
     }
 
-    private FinancialTransactionAttributes(FinancialTransaction transaction, Double amount,
+    private FinancialTransactionAttributes(FinancialTransaction transaction,
+                                           Double amount,
                                            String currency,
                                            String endToEndReference,
                                            String numericReference,

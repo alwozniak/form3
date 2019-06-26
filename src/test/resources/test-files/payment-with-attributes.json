@@ -1,0 +1,19 @@
+{
+  "type": "Payment",
+  "version": 0,
+  "organisation_id": "743d5b63-8e6f-432e-a8fa-c5d8d2ee5fcb",
+  "attributes": {
+    "amount": "100.21",
+    "currency": "GBP",
+    "end_to_end_reference": "Wil piano Jan",
+    "numeric_reference": "1002001",
+    "payment_id": "123456789012345678",
+    "payment_purpose": "Paying for goods/services",
+    "payment_scheme": "FPS",
+    "payment_type": "Credit",
+    "processing_date": "2017-01-18",
+    "reference": "Payment for Em's piano lessons",
+    "scheme_payment_sub_type": "InternetBanking",
+    "scheme_payment_type": "ImmediatePayment"
+  }
+}

@@ -1,7 +1,9 @@
 package com.alwozniak.form3.service;
 
 import com.alwozniak.form3.domain.FinancialTransaction;
+import com.alwozniak.form3.domain.FinancialTransactionAttributes;
 import com.alwozniak.form3.repository.FinancialTransactionRepository;
+import com.alwozniak.form3.resources.PaymentAttributesResource;
 import com.alwozniak.form3.resources.PaymentResourceData;
 import com.alwozniak.form3.resources.PaymentsListResource;
 import com.alwozniak.form3.resources.SinglePaymentResource;
@@ -31,6 +33,26 @@ public class PaymentsService {
 
     public FinancialTransaction createNewPaymentFromResource(PaymentResourceData paymentResourceData) {
         FinancialTransaction payment = FinancialTransaction.newPayment(paymentResourceData.getOrganisationId());
+        PaymentAttributesResource paymentAttributesResource = paymentResourceData.getPaymentAttributesResource();
+        if (paymentAttributesResource != null) {
+            FinancialTransactionAttributes attributes = createAttributesFromResource(paymentAttributesResource, payment);
+            payment.setAttributes(attributes);
+        }
         return financialTransactionRepository.save(payment);
+    }
+
+    private FinancialTransactionAttributes createAttributesFromResource(PaymentAttributesResource attributesResource,
+                                                                        FinancialTransaction paymentTransaction) {
+        return FinancialTransactionAttributes.builder(paymentTransaction)
+                .withAmountInCurrency(attributesResource.getAmount(), attributesResource.getCurrency())
+                .withReference(attributesResource.getReference())
+                .withProcessingDate(attributesResource.getProcessingDate())
+                .withPaymentSchemeData(attributesResource.getPaymentScheme(), attributesResource.getSchemePaymentType(),
+                        attributesResource.getSchemePaymentSubType())
+                .withPaymentData(attributesResource.getPaymentId(), attributesResource.getPaymentPurpose(),
+                        attributesResource.getPaymentType())
+                .withNumericReference(attributesResource.getNumericReference())
+                .withEndToEndReference(attributesResource.getEndToEndReference())
+                .build();
     }
 }

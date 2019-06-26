@@ -15,6 +15,7 @@ public class PaymentResourceData {
     private UUID organisationId;
     private Integer version;
     private FinancialTransactionAttributes attributes;
+    private PaymentAttributesResource paymentAttributesResource;
 
     public PaymentResourceData(FinancialTransaction payment) {
         this.transactionType = payment.getTransactionType();
@@ -54,8 +55,17 @@ public class PaymentResourceData {
     }
 
     @JsonProperty("attributes")
-    public PaymentAttributesResource getPaymentAttributes() {
+    public PaymentAttributesResource createPaymentAttributesResource() {
         return attributes == null ? null : new PaymentAttributesResource(attributes);
+    }
+
+    @JsonProperty("attributes")
+    public void setPaymentAttributesResource(PaymentAttributesResource paymentAttributesResource) {
+        this.paymentAttributesResource = paymentAttributesResource;
+    }
+
+    public PaymentAttributesResource getPaymentAttributesResource() {
+        return this.paymentAttributesResource;
     }
 
     @JsonProperty("organisation_id")

@@ -17,6 +17,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -337,7 +339,6 @@ public class PaymentsControllerTests {
     @Test
     public void shouldPersistValidPaymentsResourceWithoutAttributes() throws Exception {
         byte[] requestBody = getTestResource("payment-without-attributes.json");
-        String requestBodyAsString = new String(requestBody);
 
         assertThat(repository.findAllPayments(), is(empty()));
         mockMvc.perform(post("/payments").contentType(MediaType.APPLICATION_JSON_UTF8).content(requestBody))
@@ -348,5 +349,33 @@ public class PaymentsControllerTests {
         assertThat(persistedPayment.getVersion(), is(0));
         assertThat(persistedPayment.getTransactionType(), is(FinancialTransaction.FinancialTransactionType.PAYMENT));
         assertThat(persistedPayment.getOrganisationId().toString(), is("743d5b63-8e6f-432e-a8fa-c5d8d2ee5fcb"));
+    }
+
+    @Test
+    public void shouldPersistValidPaymentsResourceWithAttributes() throws Exception {
+        byte[] requestBody = getTestResource("payment-with-attributes.json");
+        LocalDate localDate = LocalDate.of(2017, 1, 18);
+        Date expectedDate = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+        assertThat(repository.findAllPayments(), is(empty()));
+        mockMvc.perform(post("/payments").contentType(MediaType.APPLICATION_JSON_UTF8).content(requestBody))
+                .andExpect(status().isCreated());
+        List<FinancialTransaction> allPayments = repository.findAllPayments();
+        assertThat(allPayments.size(), is(1));
+        FinancialTransaction paymentWithAttributes = allPayments.get(0);
+        FinancialTransactionAttributes attributes = paymentWithAttributes.getAttributes();
+        assertThat(attributes.getAmount(), is(100.21));
+        assertThat(attributes.getCurrency(), is("GBP"));
+        assertThat(attributes.getEndToEndReference(), is("Wil piano Jan"));
+        assertThat(attributes.getNumericReference(), is("1002001"));
+        assertThat(attributes.getPaymentId(), is("123456789012345678"));
+        assertThat(attributes.getPaymentPurpose(), is("Paying for goods/services"));
+        assertThat(attributes.getPaymentScheme(), is(PaymentScheme.FPS));
+        assertThat(attributes.getPaymentType(), is(PaymentType.CREDIT));
+        assertThat(attributes.getProcessingDate(), is(expectedDate));
+        assertThat(attributes.getReference(), is("Payment for Em's piano lessons"));
+        assertThat(attributes.getPaymentType(), is(PaymentType.CREDIT));
+        assertThat(attributes.getSchemePaymentType(), is(SchemePaymentType.IMMEDIATE_PAYMENT));
+        assertThat(attributes.getSchemePaymentSubType(), is(SchemePaymentSubType.INTERNET_BANKING));
     }
 }

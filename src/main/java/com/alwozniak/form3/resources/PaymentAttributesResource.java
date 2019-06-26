@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.CaseUtils;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -57,9 +58,18 @@ public class PaymentAttributesResource {
         this.chargesInformation = attributes.getChargesInformation();
     }
 
+    public PaymentAttributesResource() {
+        // For Jackson.
+    }
+
     @JsonProperty("amount")
     public Double getAmount() {
         return amount;
+    }
+
+    @JsonProperty("amount")
+    public void setAmountFromString(String amountString) {
+        this.amount = Double.valueOf(amountString);
     }
 
     @JsonProperty("currency")
@@ -67,9 +77,19 @@ public class PaymentAttributesResource {
         return currency;
     }
 
+    @JsonProperty("currency")
+    public void setCurrency(String currency) {
+        this.currency = currency;
+    }
+
     @JsonProperty("end_to_end_reference")
     public String getEndToEndReference() {
         return endToEndReference;
+    }
+
+    @JsonProperty("end_to_end_reference")
+    public void setEndToEndReference(String endToEndReference) {
+        this.endToEndReference = endToEndReference;
     }
 
     @JsonProperty("numeric_reference")
@@ -77,9 +97,19 @@ public class PaymentAttributesResource {
         return numericReference;
     }
 
+    @JsonProperty("numeric_reference")
+    public void setNumericReference(String numericReference) {
+        this.numericReference = numericReference;
+    }
+
     @JsonProperty("payment_id")
     public String getPaymentId() {
         return paymentId;
+    }
+
+    @JsonProperty("payment_id")
+    public void setPaymentId(String paymentId) {
+        this.paymentId = paymentId;
     }
 
     @JsonProperty("payment_purpose")
@@ -87,19 +117,51 @@ public class PaymentAttributesResource {
         return paymentPurpose;
     }
 
+    @JsonProperty("payment_purpose")
+    public void setPaymentPurpose(String paymentPurpose) {
+        this.paymentPurpose = paymentPurpose;
+    }
+
+    public PaymentScheme getPaymentScheme() {
+        return this.paymentScheme;
+    }
+
     @JsonProperty("payment_scheme")
-    public String getPaymentScheme() {
+    public String getPaymentSchemeString() {
         return paymentScheme == null ? null : paymentScheme.name();
     }
 
+    @JsonProperty("payment_scheme")
+    public void setPaymentSchemeFromString(String paymentSchemeString) {
+        this.paymentScheme = PaymentScheme.valueOf(paymentSchemeString);
+    }
+
     @JsonProperty("payment_type")
-    public String getPaymentType() {
+    public String getPaymentTypeString() {
         return paymentType == null ? null : StringUtils.capitalize(paymentType.name().toLowerCase());
     }
 
+    public PaymentType getPaymentType() {
+        return this.paymentType;
+    }
+
+    @JsonProperty("payment_type")
+    public void setPaymentTypeFromString(String paymentTypeString) {
+        this.paymentType = PaymentType.valueOf(paymentTypeString.toUpperCase());
+    }
+
     @JsonProperty("processing_date")
-    public String getProcessingDate() {
+    public String getProcessingDateString() {
         return processingDate == null ? null : DATE_FORMAT.format(processingDate);
+    }
+
+    public Date getProcessingDate() {
+        return this.processingDate;
+    }
+
+    @JsonProperty("processing_date")
+    public void setProcessingDateFromString(String processingDateString) throws ParseException {
+        this.processingDate = DATE_FORMAT.parse(processingDateString);
     }
 
     @JsonProperty("reference")
@@ -107,14 +169,37 @@ public class PaymentAttributesResource {
         return reference;
     }
 
+    @JsonProperty("reference")
+    public void setReference(String reference) {
+        this.reference = reference;
+    }
+
     @JsonProperty("scheme_payment_type")
-    public String getSchemePaymentType() {
+    public String getSchemePaymentTypeString() {
         return schemePaymentType == null ? null : toCamelCase(schemePaymentType.name());
     }
 
+    public SchemePaymentType getSchemePaymentType() {
+        return this.schemePaymentType;
+    }
+
+    @JsonProperty("scheme_payment_type")
+    public void setSchemePaymentTypeFromString(String schemePaymentTypeString) {
+        this.schemePaymentType = SchemePaymentType.valueOf(toUpperSnakeCase(schemePaymentTypeString));
+    }
+
     @JsonProperty("scheme_payment_sub_type")
-    public String getSchemePaymentSubType() {
+    public String getSchemePaymentSubTypeString() {
         return schemePaymentSubType == null ? null : toCamelCase(schemePaymentSubType.name());
+    }
+
+    public SchemePaymentSubType getSchemePaymentSubType() {
+        return this.schemePaymentSubType;
+    }
+
+    @JsonProperty("scheme_payment_sub_type")
+    public void setSchemePaymentSubTypeFromString(String schemePaymentSubTypeString) {
+        this.schemePaymentSubType = SchemePaymentSubType.valueOf(toUpperSnakeCase(schemePaymentSubTypeString));
     }
 
     @JsonProperty("beneficiary_party")
@@ -144,5 +229,13 @@ public class PaymentAttributesResource {
 
     private static String toCamelCase(String name) {
         return CaseUtils.toCamelCase(name.toLowerCase(), true, '_');
+    }
+
+    private static String toUpperSnakeCase(String text) {
+        return toSnakeCase(text).toUpperCase();
+    }
+
+    private static String toSnakeCase(String text) {
+        return text.replaceAll("([^_A-Z])([A-Z])", "$1_$2");
     }
 }
