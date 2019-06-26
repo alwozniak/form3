@@ -26,9 +26,18 @@ public class TransactionPartyResource {
         this.bankId = transactionParty.getBankId();
     }
 
+    public TransactionPartyResource() {
+        // For Jackson.
+    }
+
     @JsonProperty("name")
     public String getName() {
         return name;
+    }
+
+    @JsonProperty("name")
+    public void setName(String name) {
+        this.name = name;
     }
 
     @JsonProperty("account_name")
@@ -36,14 +45,33 @@ public class TransactionPartyResource {
         return accountName;
     }
 
+    @JsonProperty("account_name")
+    public void setAccountName(String accountName) {
+        this.accountName = accountName;
+    }
+
     @JsonProperty("account_number")
     public String getAccountNumber() {
         return accountNumber;
     }
 
+    @JsonProperty("account_number")
+    public void setAccountNumber(String accountNumber) {
+        this.accountNumber = accountNumber;
+    }
+
     @JsonProperty("account_number_code")
-    public String getAccountNumberCode() {
+    public String getAccountNumberCodeString() {
         return accountNumberCode == null ? null : accountNumberCode.name();
+    }
+
+    public AccountNumberCode getAccountNumberCode() {
+        return this.accountNumberCode;
+    }
+
+    @JsonProperty("account_number_code")
+    public void setAccountNumberCode(String accountNumberCode) {
+        this.accountNumberCode = AccountNumberCode.valueOf(accountNumberCode);
     }
 
     @JsonProperty("account_type")
@@ -51,9 +79,19 @@ public class TransactionPartyResource {
         return accountType;
     }
 
+    @JsonProperty("account_type")
+    public void setAccountType(int type) {
+        this.accountType = type;
+    }
+
     @JsonProperty("address")
     public String getAddress() {
         return address;
+    }
+
+    @JsonProperty("address")
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     @JsonProperty("bank_id")
@@ -61,9 +99,19 @@ public class TransactionPartyResource {
         return bankId;
     }
 
+    @JsonProperty("bank_id")
+    public void setBankId(String bankId) {
+        this.bankId = bankId;
+    }
+
     @JsonProperty("bank_id_code")
     public String getBankIdCode() {
         return bankIdCode;
+    }
+
+    @JsonProperty("bank_id_code")
+    public void setBankIdCode(String bankIdCode) {
+        this.bankIdCode = bankIdCode;
     }
 }
 

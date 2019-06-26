@@ -32,11 +32,18 @@ public class PaymentAttributesResource {
     private PaymentType paymentType;
     private SchemePaymentType schemePaymentType;
     private SchemePaymentSubType schemePaymentSubType;
+
     private TransactionParty beneficiaryParty;
+    private TransactionPartyResource beneficiaryPartyResource;
+
     private TransactionParty debtorParty;
+    private TransactionPartyResource debtorPartyResource;
+
     private ForeignExchangeInfo foreignExchangeInfo;
     private ChargesInformation chargesInformation;
+
     private TransactionParty sponsorParty;
+    private TransactionPartyResource sponsorPartyResource;
 
     public PaymentAttributesResource(FinancialTransactionAttributes attributes) {
         this.sponsorParty = attributes.getSponsorParty();
@@ -203,13 +210,31 @@ public class PaymentAttributesResource {
     }
 
     @JsonProperty("beneficiary_party")
-    public TransactionPartyResource getBeneficiaryParty() {
+    public TransactionPartyResource createBeneficiaryPartyResource() {
         return beneficiaryParty == null ? null : new TransactionPartyResource(beneficiaryParty);
     }
 
+    public TransactionPartyResource getBeneficiaryPartyResource() {
+        return this.beneficiaryPartyResource;
+    }
+
+    @JsonProperty("beneficiary_party")
+    public void setBeneficiaryPartyResource(TransactionPartyResource beneficiaryPartyResource) {
+        this.beneficiaryPartyResource = beneficiaryPartyResource;
+    }
+
     @JsonProperty("debtor_party")
-    public TransactionPartyResource getDebtorParty() {
+    public TransactionPartyResource createDebtorPartyResource() {
         return debtorParty == null ? null : new TransactionPartyResource(debtorParty);
+    }
+
+    @JsonProperty("debtor_party")
+    public void setDebtorPartyResource(TransactionPartyResource debtorPartyResource) {
+        this.debtorPartyResource = debtorPartyResource;
+    }
+
+    public TransactionPartyResource getDebtorPartyResource() {
+        return this.debtorPartyResource;
     }
 
     @JsonProperty("fx")
@@ -223,8 +248,17 @@ public class PaymentAttributesResource {
     }
 
     @JsonProperty("sponsor_party")
-    public SponsorPartyResource getSponsorPartyResource() {
+    public SponsorPartyResource createSponsorPartyResource() {
         return sponsorParty == null ? null : new SponsorPartyResource(sponsorParty);
+    }
+
+    @JsonProperty("sponsor_party")
+    public void setSponsorPartyResource(TransactionPartyResource sponsorPartyResource) {
+        this.sponsorPartyResource = sponsorPartyResource;
+    }
+
+    public TransactionPartyResource getSponsorPartyResource() {
+        return this.sponsorPartyResource;
     }
 
     private static String toCamelCase(String name) {

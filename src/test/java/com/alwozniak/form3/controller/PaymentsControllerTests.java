@@ -1,6 +1,7 @@
 package com.alwozniak.form3.controller;
 
 import com.alwozniak.form3.domain.*;
+import com.alwozniak.form3.domain.AccountData.AccountNumberCode;
 import com.alwozniak.form3.domain.ChargesInformation.ChargeType;
 import com.alwozniak.form3.domain.FinancialTransactionAttributes.PaymentScheme;
 import com.alwozniak.form3.domain.FinancialTransactionAttributes.PaymentType;
@@ -343,9 +344,7 @@ public class PaymentsControllerTests {
         assertThat(repository.findAllPayments(), is(empty()));
         mockMvc.perform(post("/payments").contentType(MediaType.APPLICATION_JSON_UTF8).content(requestBody))
                 .andExpect(status().isCreated());
-        List<FinancialTransaction> allPayments = repository.findAllPayments();
-        assertThat(allPayments.size(), is(1));
-        FinancialTransaction persistedPayment = allPayments.get(0);
+        FinancialTransaction persistedPayment = getTheOnlyPersistedTransaction();
         assertThat(persistedPayment.getVersion(), is(0));
         assertThat(persistedPayment.getTransactionType(), is(FinancialTransaction.FinancialTransactionType.PAYMENT));
         assertThat(persistedPayment.getOrganisationId().toString(), is("743d5b63-8e6f-432e-a8fa-c5d8d2ee5fcb"));
@@ -356,13 +355,11 @@ public class PaymentsControllerTests {
         byte[] requestBody = getTestResource("payment-with-attributes.json");
         LocalDate localDate = LocalDate.of(2017, 1, 18);
         Date expectedDate = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
-
         assertThat(repository.findAllPayments(), is(empty()));
+
         mockMvc.perform(post("/payments").contentType(MediaType.APPLICATION_JSON_UTF8).content(requestBody))
                 .andExpect(status().isCreated());
-        List<FinancialTransaction> allPayments = repository.findAllPayments();
-        assertThat(allPayments.size(), is(1));
-        FinancialTransaction paymentWithAttributes = allPayments.get(0);
+        FinancialTransaction paymentWithAttributes = getTheOnlyPersistedTransaction();
         FinancialTransactionAttributes attributes = paymentWithAttributes.getAttributes();
         assertThat(attributes.getAmount(), is(100.21));
         assertThat(attributes.getCurrency(), is("GBP"));
@@ -377,5 +374,69 @@ public class PaymentsControllerTests {
         assertThat(attributes.getPaymentType(), is(PaymentType.CREDIT));
         assertThat(attributes.getSchemePaymentType(), is(SchemePaymentType.IMMEDIATE_PAYMENT));
         assertThat(attributes.getSchemePaymentSubType(), is(SchemePaymentSubType.INTERNET_BANKING));
+    }
+
+    @Test
+    public void shouldPersistPaymentWithAttributesContainingBeneficiaryParty() throws Exception {
+        byte[] requestBody = getTestResource("payment-with-attributes-with-beneficiary.json");
+        assertThat(repository.findAllPayments(), is(empty()));
+
+        mockMvc.perform(post("/payments").contentType(MediaType.APPLICATION_JSON_UTF8).content(requestBody))
+                .andExpect(status().isCreated());
+        FinancialTransaction transaction = getTheOnlyPersistedTransaction();
+        FinancialTransactionAttributes attributes = transaction.getAttributes();
+        TransactionParty beneficiaryParty = attributes.getBeneficiaryParty();
+        assertThat(beneficiaryParty.getAccountName(), is("W Owens"));
+        assertThat(beneficiaryParty.getAccountNumber(), is("31926819"));
+        assertThat(beneficiaryParty.getAccountNumberCode(), is(AccountNumberCode.BBAN));
+        assertThat(beneficiaryParty.getAccountType(), is(0));
+        assertThat(beneficiaryParty.getAddress(), is("1 The Beneficiary Localtown SE2"));
+        assertThat(beneficiaryParty.getBankId(), is("403000"));
+        assertThat(beneficiaryParty.getBankIdCode(), is("GBDSC"));
+        assertThat(beneficiaryParty.getName(), is("Wilfred Jeremiah Owens"));
+    }
+
+    @Test
+    public void shouldPersistPaymentWithAttributesContainingDebtorParty() throws Exception {
+        byte[] requestBody = getTestResource("payment-with-attributes-with-debtor.json");
+        assertThat(repository.findAllPayments(), is(empty()));
+
+        mockMvc.perform(post("/payments").contentType(MediaType.APPLICATION_JSON_UTF8).content(requestBody))
+                .andExpect(status().isCreated());
+        FinancialTransaction transaction = getTheOnlyPersistedTransaction();
+        FinancialTransactionAttributes attributes = transaction.getAttributes();
+        TransactionParty debtorParty = attributes.getDebtorParty();
+        assertThat(debtorParty.getAccountName(), is("EJ Brown Black"));
+        assertThat(debtorParty.getAccountNumber(), is("GB29XABC10161234567801"));
+        assertThat(debtorParty.getAccountNumberCode(), is(AccountNumberCode.IBAN));
+        assertThat(debtorParty.getAddress(), is("10 Debtor Crescent Sourcetown NE1"));
+        assertThat(debtorParty.getBankId(), is("203301"));
+        assertThat(debtorParty.getBankIdCode(), is("GBDSC"));
+        assertThat(debtorParty.getName(), is("Emelia Jane Brown"));
+    }
+
+    @Test
+    public void shouldPersistPaymentWithAttributesContainingSponsorParty() throws Exception {
+        byte[] requestBody = getTestResource("payment-with-attributes-with-sponsor.json");
+        assertThat(repository.findAllPayments(), is(empty()));
+
+        mockMvc.perform(post("/payments").contentType(MediaType.APPLICATION_JSON_UTF8).content(requestBody))
+                .andExpect(status().isCreated());
+        FinancialTransaction transaction = getTheOnlyPersistedTransaction();
+        FinancialTransactionAttributes attributes = transaction.getAttributes();
+        TransactionParty sponsorParty = attributes.getSponsorParty();
+        assertThat(sponsorParty.getAccountNumber(), is("56781234"));
+        assertThat(sponsorParty.getBankId(), is("123123"));
+        assertThat(sponsorParty.getBankIdCode(), is("GBDSC"));
+    }
+
+    //
+    // Helper methods.
+    //
+
+    private FinancialTransaction getTheOnlyPersistedTransaction() {
+        List<FinancialTransaction> allPayments = repository.findAllPayments();
+        assertThat(allPayments.size(), is(1));
+        return allPayments.get(0);
     }
 }

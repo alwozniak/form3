@@ -1,0 +1,28 @@
+{
+  "type": "Payment",
+  "version": 0,
+  "organisation_id": "743d5b63-8e6f-432e-a8fa-c5d8d2ee5fcb",
+  "attributes": {
+    "amount": "100.21",
+    "debtor_party": {
+      "account_name": "EJ Brown Black",
+      "account_number": "GB29XABC10161234567801",
+      "account_number_code": "IBAN",
+      "address": "10 Debtor Crescent Sourcetown NE1",
+      "bank_id": "203301",
+      "bank_id_code": "GBDSC",
+      "name": "Emelia Jane Brown"
+    },
+    "currency": "GBP",
+    "end_to_end_reference": "Wil piano Jan",
+    "numeric_reference": "1002001",
+    "payment_id": "123456789012345678",
+    "payment_purpose": "Paying for goods/services",
+    "payment_scheme": "FPS",
+    "payment_type": "Credit",
+    "processing_date": "2017-01-18",
+    "reference": "Payment for Em's piano lessons",
+    "scheme_payment_sub_type": "InternetBanking",
+    "scheme_payment_type": "ImmediatePayment"
+  }
+}
