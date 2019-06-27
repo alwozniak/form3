@@ -37,12 +37,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 public class PaymentsControllerTests {
 
+    private static final String PATH_TO_ATTRIBUTES = "$.data.attributes";
+    private static final String PAYMENTS_PATH = "/payments";
+
     @Autowired
     private FinancialTransactionRepository repository;
 
     @Autowired
     private MockMvc mockMvc;
-    public static final String PATH_TO_ATTRIBUTES = "$.data.attributes";
 
     @Before
     public void setUp() {
@@ -55,7 +57,7 @@ public class PaymentsControllerTests {
 
     @Test
     public void shouldCorrectlyFetchEmptyListOfPayments() throws Exception {
-        mockMvc.perform(get("/payments").accept(MediaType.APPLICATION_JSON_UTF8))
+        mockMvc.perform(get(PAYMENTS_PATH).accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(content().json("{\"data\":[]}"));
@@ -65,7 +67,7 @@ public class PaymentsControllerTests {
     public void shouldCorrectlyFetchSingletonListOfPayments() throws Exception {
         FinancialTransaction persistedPayment = repository.save(FinancialTransaction.newPayment(UUID.randomUUID()));
 
-        mockMvc.perform(get("/payments").accept(MediaType.APPLICATION_JSON_UTF8))
+        mockMvc.perform(get(PAYMENTS_PATH).accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(jsonPath("$.data.length()", is(1)))
@@ -84,7 +86,7 @@ public class PaymentsControllerTests {
                 .map(UUID::toString)
                 .toArray(String[]::new);
 
-        mockMvc.perform(get("/payments").accept(MediaType.APPLICATION_JSON_UTF8))
+        mockMvc.perform(get(PAYMENTS_PATH).accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(jsonPath("$.data.length()", is(numberOfTransactions)))
@@ -98,7 +100,7 @@ public class PaymentsControllerTests {
     @Test
     public void shouldReturnNotFoundStatusCodeWhenPaymentOfAGivenIdDoesNotExist() throws Exception {
         UUID paymentId = UUID.randomUUID();
-        mockMvc.perform(get("/payments/" + paymentId).accept(MediaType.APPLICATION_JSON_UTF8))
+        mockMvc.perform(get(PAYMENTS_PATH + "/" + paymentId).accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(jsonPath("$.errorMessage", containsString(paymentId.toString())))
@@ -107,7 +109,7 @@ public class PaymentsControllerTests {
 
     @Test
     public void shouldReturnBadRequestStatusWithErrorMessageWhenPaymentIdIsOfIncorrectType() throws Exception {
-        mockMvc.perform(get("/payments/123").accept(MediaType.APPLICATION_JSON_UTF8))
+        mockMvc.perform(get(PAYMENTS_PATH + "/123").accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(jsonPath("$.errorMessage", containsString("Bad request data.")));
@@ -120,7 +122,8 @@ public class PaymentsControllerTests {
         FinancialTransaction persistedPayment = repository.save(transaction);
         UUID existingPaymentId = persistedPayment.getId();
 
-        mockMvc.perform(get("/payments/" + existingPaymentId.toString()).accept(MediaType.APPLICATION_JSON_UTF8))
+        mockMvc.perform(get(PAYMENTS_PATH + "/" + existingPaymentId.toString())
+                .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.type", is("Payment")))
                 .andExpect(jsonPath("$.data.id", is(existingPaymentId.toString())))
@@ -155,7 +158,8 @@ public class PaymentsControllerTests {
         UUID existingPaymentId = persistedPayment.getId();
 
         String pathToAttributes = "$.data.attributes";
-        mockMvc.perform(get("/payments/" + existingPaymentId.toString()).accept(MediaType.APPLICATION_JSON_UTF8))
+        mockMvc.perform(get(PAYMENTS_PATH + "/" + existingPaymentId.toString())
+                .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath(pathToAttributes + ".amount", is(paymentAmount)))
                 .andExpect(jsonPath(pathToAttributes + ".currency", is(paymentCurrency)))
@@ -199,17 +203,18 @@ public class PaymentsControllerTests {
         UUID existingPaymentId = persistedPayment.getId();
 
         String pathToBeneficiary = PATH_TO_ATTRIBUTES + ".beneficiary_party";
-        mockMvc.perform(get("/payments/" + existingPaymentId.toString()).accept(MediaType.APPLICATION_JSON_UTF8))
+        mockMvc.perform(get(PAYMENTS_PATH + "/" + existingPaymentId.toString())
+                .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath(pathToBeneficiary, notNullValue()))
                 .andExpect(jsonPath(pathToBeneficiary + ".account_name", is(beneficiaryAccountName)))
                 .andExpect(jsonPath(pathToBeneficiary + ".account_number", is(beneficiaryAccountNumber)))
-        .andExpect(jsonPath(pathToBeneficiary + ".account_number_code", is("BBAN")))
-        .andExpect(jsonPath(pathToBeneficiary + ".account_type", is(beneficiaryAccountType)))
-        .andExpect(jsonPath(pathToBeneficiary + ".address", is(beneficiaryAddress)))
-        .andExpect(jsonPath(pathToBeneficiary + ".bank_id", is(beneficiaryBankId)))
-        .andExpect(jsonPath(pathToBeneficiary + ".bank_id_code", is (beneficiaryBankIdCode)))
-        .andExpect(jsonPath(pathToBeneficiary + ".name", is(beneficiaryName)));
+                .andExpect(jsonPath(pathToBeneficiary + ".account_number_code", is("BBAN")))
+                .andExpect(jsonPath(pathToBeneficiary + ".account_type", is(beneficiaryAccountType)))
+                .andExpect(jsonPath(pathToBeneficiary + ".address", is(beneficiaryAddress)))
+                .andExpect(jsonPath(pathToBeneficiary + ".bank_id", is(beneficiaryBankId)))
+                .andExpect(jsonPath(pathToBeneficiary + ".bank_id_code", is (beneficiaryBankIdCode)))
+                .andExpect(jsonPath(pathToBeneficiary + ".name", is(beneficiaryName)));
     }
 
     @Test
@@ -238,7 +243,8 @@ public class PaymentsControllerTests {
         UUID existingPaymentId = persistedPayment.getId();
 
         String pathToDebtor = PATH_TO_ATTRIBUTES + ".debtor_party";
-        mockMvc.perform(get("/payments/" + existingPaymentId.toString()).accept(MediaType.APPLICATION_JSON_UTF8))
+        mockMvc.perform(get(PAYMENTS_PATH + "/" + existingPaymentId.toString())
+                .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath(pathToDebtor, notNullValue()))
                 .andExpect(jsonPath(pathToDebtor + ".account_name", is(debtorAccountName)))
@@ -267,7 +273,8 @@ public class PaymentsControllerTests {
         UUID existingPaymentId = persistedPayment.getId();
 
         String pathToFx = PATH_TO_ATTRIBUTES + ".fx";
-        mockMvc.perform(get("/payments/" + existingPaymentId.toString()).accept(MediaType.APPLICATION_JSON_UTF8))
+        mockMvc.perform(get(PAYMENTS_PATH + "/" + existingPaymentId.toString())
+                .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath(pathToFx, notNullValue()))
                 .andExpect(jsonPath(pathToFx + ".contract_reference", is(contractReference)))
@@ -292,7 +299,8 @@ public class PaymentsControllerTests {
         UUID existingPaymentId = persistedPayment.getId();
 
         String pathToChargesInformation = PATH_TO_ATTRIBUTES + ".charges_information";
-        mockMvc.perform(get("/payments/" + existingPaymentId.toString()).accept(MediaType.APPLICATION_JSON_UTF8))
+        mockMvc.perform(get(PAYMENTS_PATH + "/" + existingPaymentId.toString())
+                .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath(pathToChargesInformation, notNullValue()))
                 .andExpect(jsonPath(pathToChargesInformation + ".bearer_code", is("SHAR")))
@@ -324,7 +332,8 @@ public class PaymentsControllerTests {
         UUID existingPaymentId = persistedPayment.getId();
 
         String pathToSponsor = PATH_TO_ATTRIBUTES + ".sponsor_party";
-        mockMvc.perform(get("/payments/" + existingPaymentId.toString()).accept(MediaType.APPLICATION_JSON_UTF8))
+        mockMvc.perform(get(PAYMENTS_PATH + "/" + existingPaymentId.toString())
+                .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath(pathToSponsor, notNullValue()))
                 .andExpect(jsonPath(pathToSponsor + ".account_number", is(debtorAccountNumber)))
@@ -341,7 +350,7 @@ public class PaymentsControllerTests {
         byte[] requestBody = getTestResource("payment-without-attributes.json");
 
         assertThat(repository.findAllPayments(), is(empty()));
-        mockMvc.perform(post("/payments").contentType(MediaType.APPLICATION_JSON_UTF8).content(requestBody))
+        mockMvc.perform(post(PAYMENTS_PATH).contentType(MediaType.APPLICATION_JSON_UTF8).content(requestBody))
                 .andExpect(status().isCreated());
         FinancialTransaction persistedPayment = getTheOnlyPersistedTransaction();
         assertThat(persistedPayment.getVersion(), is(0));
@@ -356,7 +365,7 @@ public class PaymentsControllerTests {
         Date expectedDate = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
         assertThat(repository.findAllPayments(), is(empty()));
 
-        mockMvc.perform(post("/payments").contentType(MediaType.APPLICATION_JSON_UTF8).content(requestBody))
+        mockMvc.perform(post(PAYMENTS_PATH).contentType(MediaType.APPLICATION_JSON_UTF8).content(requestBody))
                 .andExpect(status().isCreated());
         FinancialTransaction paymentWithAttributes = getTheOnlyPersistedTransaction();
         FinancialTransactionAttributes attributes = paymentWithAttributes.getAttributes();
@@ -380,7 +389,7 @@ public class PaymentsControllerTests {
         byte[] requestBody = getTestResource("payment-with-attributes-with-beneficiary.json");
         assertThat(repository.findAllPayments(), is(empty()));
 
-        mockMvc.perform(post("/payments").contentType(MediaType.APPLICATION_JSON_UTF8).content(requestBody))
+        mockMvc.perform(post(PAYMENTS_PATH).contentType(MediaType.APPLICATION_JSON_UTF8).content(requestBody))
                 .andExpect(status().isCreated());
         FinancialTransaction transaction = getTheOnlyPersistedTransaction();
         FinancialTransactionAttributes attributes = transaction.getAttributes();
@@ -400,7 +409,7 @@ public class PaymentsControllerTests {
         byte[] requestBody = getTestResource("payment-with-attributes-with-debtor.json");
         assertThat(repository.findAllPayments(), is(empty()));
 
-        mockMvc.perform(post("/payments").contentType(MediaType.APPLICATION_JSON_UTF8).content(requestBody))
+        mockMvc.perform(post(PAYMENTS_PATH).contentType(MediaType.APPLICATION_JSON_UTF8).content(requestBody))
                 .andExpect(status().isCreated());
         FinancialTransaction transaction = getTheOnlyPersistedTransaction();
         FinancialTransactionAttributes attributes = transaction.getAttributes();
@@ -419,7 +428,7 @@ public class PaymentsControllerTests {
         byte[] requestBody = getTestResource("payment-with-attributes-with-sponsor.json");
         assertThat(repository.findAllPayments(), is(empty()));
 
-        mockMvc.perform(post("/payments").contentType(MediaType.APPLICATION_JSON_UTF8).content(requestBody))
+        mockMvc.perform(post(PAYMENTS_PATH).contentType(MediaType.APPLICATION_JSON_UTF8).content(requestBody))
                 .andExpect(status().isCreated());
         FinancialTransaction transaction = getTheOnlyPersistedTransaction();
         FinancialTransactionAttributes attributes = transaction.getAttributes();
@@ -434,7 +443,7 @@ public class PaymentsControllerTests {
         byte[] requestBody = getTestResource("payment-with-attributes-with-fx.json");
         assertThat(repository.findAllPayments(), is(empty()));
 
-        mockMvc.perform(post("/payments").contentType(MediaType.APPLICATION_JSON_UTF8).content(requestBody))
+        mockMvc.perform(post(PAYMENTS_PATH).contentType(MediaType.APPLICATION_JSON_UTF8).content(requestBody))
                 .andExpect(status().isCreated());
         FinancialTransaction transaction = getTheOnlyPersistedTransaction();
         FinancialTransactionAttributes attributes = transaction.getAttributes();
@@ -450,7 +459,7 @@ public class PaymentsControllerTests {
         byte[] requestBody = getTestResource("payment-with-attributes-with-charges-information.json");
         assertThat(repository.findAllPayments(), is(empty()));
 
-        mockMvc.perform(post("/payments").contentType(MediaType.APPLICATION_JSON_UTF8).content(requestBody))
+        mockMvc.perform(post(PAYMENTS_PATH).contentType(MediaType.APPLICATION_JSON_UTF8).content(requestBody))
                 .andExpect(status().isCreated());
         FinancialTransaction transaction = getTheOnlyPersistedTransaction();
         ChargesInformation chargesInformation = transaction.getAttributes().getChargesInformation();
