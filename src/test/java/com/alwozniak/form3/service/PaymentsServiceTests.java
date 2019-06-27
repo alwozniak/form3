@@ -21,15 +21,12 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static com.alwozniak.form3.util.TestUtils.assertSenderChargeInfoForCurrency;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -86,7 +83,7 @@ public class PaymentsServiceTests {
         SinglePaymentResource resource = paymentsService.getSinglePaymentResource(existingPayment.getId());
 
         PaymentResourceData resourceData = resource.getData();
-        assertThat(resourceData.getType(), is("Payment"));
+        assertThat(resourceData.getTypeString(), is("Payment"));
         assertThat(resourceData.getId(), is(existingPayment.getId().toString()));
         assertThat(resourceData.getOrganisationId(), is(organisationId));
     }
@@ -298,5 +295,91 @@ public class PaymentsServiceTests {
         assertThat(senderCharges.size(), is(2));
         assertSenderChargeInfoForCurrency(senderCharges, "USD", 7.98);
         assertSenderChargeInfoForCurrency(senderCharges, "GBP", 6.34);
+    }
+
+    //
+    // Tests for updating existing payment.
+    //
+
+    @Test(expected = PaymentNotFoundException.class)
+    public void shouldThrowPaymentNotFoundExceptionWhenTryingToUpdateNonExistingPayment()
+            throws PaymentNotFoundException {
+        UUID nonExistingPaymentId = UUID.randomUUID();
+        assertFalse(financialTransactionRepository.existsById(nonExistingPaymentId));
+        PaymentResourceData paymentResourceData = new PaymentResourceData();
+        paymentResourceData.setOrganisationIdFromString(UUID.randomUUID().toString());
+
+        paymentsService.updatePayment(nonExistingPaymentId, paymentResourceData);
+    }
+
+    @Test
+    public void shouldCorrectlyUpdatePaymentOrganisationIdForExistingPayment() throws PaymentNotFoundException {
+        UUID initialOrganisationId = UUID.randomUUID();
+        FinancialTransaction persistedPayment = createNewPayment(initialOrganisationId);
+        assertThat(persistedPayment.getOrganisationId(), is(initialOrganisationId));
+        PaymentResourceData resourceData = new PaymentResourceData();
+        UUID newOrganisationId = UUID.randomUUID();
+        resourceData.setOrganisationIdFromString(newOrganisationId.toString());
+
+        FinancialTransaction modifiedPayment = paymentsService.updatePayment(persistedPayment.getId(), resourceData);
+
+        assertThat(modifiedPayment.getId(), is(persistedPayment.getId()));
+        assertThat(modifiedPayment.getOrganisationId(), is(newOrganisationId));
+    }
+
+    @Test
+    public void shouldCreateAttributesWhenUpdatingPaymentWithoutAttributesWithResourceThatHasIt()
+            throws PaymentNotFoundException {
+        FinancialTransaction payment = createNewPayment(UUID.randomUUID());
+        assertThat(payment.getAttributes(), nullValue());
+        PaymentResourceData resourceData = new PaymentResourceData();
+        PaymentAttributesResource paymentAttributesResource = new PaymentAttributesResource();
+        paymentAttributesResource.setAmountFromString("91.00");
+        resourceData.setPaymentAttributesResource(paymentAttributesResource);
+
+        FinancialTransaction updatedPayment = paymentsService.updatePayment(payment.getId(), resourceData);
+
+        FinancialTransaction persistedPayment = financialTransactionRepository.findById(updatedPayment.getId())
+                .orElseThrow(() -> new RuntimeException("Payment not found."));
+        FinancialTransactionAttributes persistedPaymentAttributes = persistedPayment.getAttributes();
+        assertThat(persistedPaymentAttributes, notNullValue());
+        assertThat(persistedPaymentAttributes.getAmount(), is(91.00));
+    }
+
+    @Test
+    public void shouldCorrectlyUpdateAttributeFieldsForExistingPayment() throws PaymentNotFoundException {
+        FinancialTransaction payment = createNewPayment(UUID.randomUUID());
+        FinancialTransactionAttributes attributes = FinancialTransactionAttributes.builder(payment)
+                .withAmountInCurrency(90.00, "CHF")
+                .withEndToEndReference("End to end reference")
+                .withNumericReference("123123123456")
+                .build();
+        payment.setAttributes(attributes);
+        PaymentResourceData paymentResourceData = new PaymentResourceData();
+        PaymentAttributesResource paymentAttributesResource = new PaymentAttributesResource();
+        paymentAttributesResource.setAmountFromString("91.00");
+        String modifiedEndToEndReference = "Modified end to end reference";
+        paymentAttributesResource.setEndToEndReference(modifiedEndToEndReference);
+        String paymentId = "00998877665544";
+        paymentAttributesResource.setPaymentId(paymentId);
+        paymentResourceData.setPaymentAttributesResource(paymentAttributesResource);
+
+        FinancialTransaction modifiedPayment = paymentsService.updatePayment(payment.getId(), paymentResourceData);
+
+        FinancialTransaction persistedPayment = financialTransactionRepository.findById(modifiedPayment.getId())
+                .orElseThrow(() -> new RuntimeException("Payment not found."));
+        FinancialTransactionAttributes persistedPaymentAttributes = persistedPayment.getAttributes();
+        assertThat(persistedPaymentAttributes.getAmount(), is(91.00));
+        assertThat(persistedPaymentAttributes.getEndToEndReference(), is(modifiedEndToEndReference));
+        assertThat(persistedPaymentAttributes.getPaymentId(), is(paymentId));
+    }
+
+    //
+    // Helper methods.
+    //
+
+    private FinancialTransaction createNewPayment(UUID initialOrganisationId) {
+        FinancialTransaction newPayment = FinancialTransaction.newPayment(initialOrganisationId);
+        return financialTransactionRepository.save(newPayment);
     }
 }

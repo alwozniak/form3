@@ -42,4 +42,16 @@ public class PaymentsController {
                 .path("/{paymentId}").buildAndExpand(payment.getId()).toUri();
         return ResponseEntity.created(location).build();
     }
+
+    @PatchMapping(value = "/{paymentId}", consumes = "application/json")
+    public ResponseEntity<?> updatePayment(@RequestBody PaymentResourceData paymentResourceData,
+                                        @PathVariable("paymentId") UUID paymentId) {
+        try {
+            paymentsService.updatePayment(paymentId, paymentResourceData);
+            URI location = ServletUriComponentsBuilder.fromCurrentRequest().build().toUri();
+            return ResponseEntity.created(location).build();
+        } catch (PaymentNotFoundException e) {
+            throw new ResourceNotFoundException(e.getMessage());
+        }
+    }
 }

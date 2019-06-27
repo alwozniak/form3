@@ -30,13 +30,17 @@ public class PaymentResourceData {
     }
 
     @JsonProperty("type")
-    public String getType() {
+    public String getTypeString() {
         return transactionType == null ? null : StringUtils.capitalize(transactionType.name().toLowerCase());
     }
 
     @JsonProperty("type")
     public void setTypeFromString(String transactionTypeString) {
         this.transactionType = FinancialTransactionType.valueOf(transactionTypeString.toUpperCase());
+    }
+
+    public FinancialTransactionType getTransactionType() {
+        return this.transactionType;
     }
 
     @JsonProperty("id")

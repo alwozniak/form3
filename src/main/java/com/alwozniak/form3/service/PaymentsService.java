@@ -23,8 +23,8 @@ public class PaymentsService {
     }
 
     public SinglePaymentResource getSinglePaymentResource(UUID paymentId) throws PaymentNotFoundException {
-        FinancialTransaction payment = financialTransactionRepository.findById(paymentId).orElseThrow(
-                () -> new PaymentNotFoundException("Payment with id " + paymentId + " not found"));
+        FinancialTransaction payment = financialTransactionRepository.findById(paymentId)
+                .orElseThrow(() -> new PaymentNotFoundException(paymentId ));
         return new SinglePaymentResource(payment);
     }
 
@@ -36,6 +36,32 @@ public class PaymentsService {
             payment.setAttributes(attributes);
         }
         return financialTransactionRepository.save(payment);
+    }
+
+    public FinancialTransaction updatePayment(UUID paymentId, PaymentResourceData paymentResourceData) throws PaymentNotFoundException {
+        return financialTransactionRepository.findById(paymentId)
+                .map(payment -> {
+                    payment.updateFields(paymentResourceData.getOrganisationId(),
+                            paymentResourceData.getTransactionType(),
+                            paymentResourceData.getVersion());
+                    PaymentAttributesResource attributesResource = paymentResourceData.getPaymentAttributesResource();
+                    if (attributesResource != null) {
+                        FinancialTransactionAttributes paymentAttributes = payment.getAttributes();
+                        if (paymentAttributes == null) {
+                            payment.setAttributes(createAttributesFromResource(attributesResource, payment));
+                        } else {
+                            paymentAttributes.updateFields(attributesResource.getAmount(),
+                                    attributesResource.getCurrency(), attributesResource.getEndToEndReference(),
+                                    attributesResource.getNumericReference(), attributesResource.getPaymentId(),
+                                    attributesResource.getPaymentPurpose(), attributesResource.getPaymentType(),
+                                    attributesResource.getPaymentScheme(), attributesResource.getProcessingDate(),
+                                    attributesResource.getReference(), attributesResource.getSchemePaymentType(),
+                                    attributesResource.getSchemePaymentSubType());
+                        }
+                    }
+                    return financialTransactionRepository.save(payment);
+                })
+                .orElseThrow(() -> new PaymentNotFoundException(paymentId));
     }
 
     private FinancialTransactionAttributes createAttributesFromResource(PaymentAttributesResource attributesResource,

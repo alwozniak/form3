@@ -28,8 +28,8 @@ import java.util.UUID;
 import static com.alwozniak.form3.util.TestUtils.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.junit.Assert.assertFalse;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringRunner.class)
@@ -470,6 +470,22 @@ public class PaymentsControllerTests {
         assertThat(senderCharges.size(), is(2));
         assertSenderChargeInfoForCurrency(senderCharges, "USD", 10.0);
         assertSenderChargeInfoForCurrency(senderCharges, "GBP", 5.0);
+    }
+
+    //
+    // Tests for PUT /payments/:id.
+    //
+
+    @Test
+    public void shouldReturnResourceNotFoundResponseWhenRequestingToPatchNonexistingResource() throws Exception {
+        UUID nonExistingPaymentId = UUID.randomUUID();
+        assertFalse(repository.findById(nonExistingPaymentId).isPresent());
+        byte[] requestBody = getTestResource("payment-with-attributes.json");
+
+        mockMvc.perform(patch(PAYMENTS_PATH + "/" + nonExistingPaymentId.toString())
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .content(requestBody))
+                .andExpect(status().isNotFound());
     }
 
     //

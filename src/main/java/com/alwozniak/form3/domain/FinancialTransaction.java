@@ -1,7 +1,6 @@
 package com.alwozniak.form3.domain;
 
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.util.UUID;
@@ -79,5 +78,17 @@ public class FinancialTransaction {
 
     public void setAttributes(FinancialTransactionAttributes attributes) {
         this.attributes = attributes;
+    }
+
+    public void updateFields(UUID organisationId, FinancialTransactionType transactionType, Integer version) {
+        if (organisationId != null) {
+            this.organisationId = organisationId;
+        }
+        if (transactionType != null) {
+             this.transactionType = transactionType;
+        }
+        if (version != null) {
+            this.version = version;
+        }
     }
 }

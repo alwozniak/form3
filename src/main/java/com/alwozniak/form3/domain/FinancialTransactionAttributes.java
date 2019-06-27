@@ -327,4 +327,46 @@ public class FinancialTransactionAttributes {
     public TransactionParty getSponsorParty() {
         return sponsorParty;
     }
+
+    public void updateFields(Double amount, String currency, String endToEndReference, String numericReference,
+                             String paymentId, String paymentPurpose, PaymentType paymentType,
+                             PaymentScheme paymentScheme, Date processingDate, String reference,
+                             SchemePaymentType schemePaymentType, SchemePaymentSubType schemePaymentSubType) {
+        if (amount != null) {
+            this.amount = amount;
+        }
+        if (currency != null) {
+            this.currency = currency;
+        }
+        if (endToEndReference != null) {
+            this.endToEndReference = endToEndReference;
+        }
+        if (numericReference != null) {
+            this.numericReference = numericReference;
+        }
+        if (paymentId != null) {
+            this.paymentId = paymentId;
+        }
+        if (paymentPurpose != null) {
+            this.paymentPurpose = paymentPurpose;
+        }
+        if (paymentType != null) {
+            this.paymentType = paymentType;
+        }
+        if (paymentScheme != null) {
+            this.paymentScheme = paymentScheme;
+        }
+        if (processingDate != null) {
+            this.processingDate = processingDate;
+        }
+        if (reference != null) {
+            this.reference = reference;
+        }
+        if (schemePaymentType != null) {
+            this.schemePaymentType = schemePaymentType;
+        }
+        if (schemePaymentSubType != null) {
+            this.schemePaymentSubType = schemePaymentSubType;
+        }
+    }
 }
