@@ -1,10 +1,7 @@
 package com.alwozniak.form3.service;
 
-import com.alwozniak.form3.domain.AccountData;
+import com.alwozniak.form3.domain.*;
 import com.alwozniak.form3.domain.AccountData.AccountNumberCode;
-import com.alwozniak.form3.domain.FinancialTransaction;
-import com.alwozniak.form3.domain.FinancialTransactionAttributes;
-import com.alwozniak.form3.domain.TransactionParty;
 import com.alwozniak.form3.repository.FinancialTransactionRepository;
 import com.alwozniak.form3.resources.*;
 import com.alwozniak.form3.service.exception.PaymentNotFoundException;
@@ -67,6 +64,25 @@ public class PaymentsService {
         TransactionPartyResource sponsorResource = attributesResource.getSponsorPartyResource();
         if (sponsorResource != null) {
             attributesBuilder.withSponsorParty(createTransactionPartyFromResource(sponsorResource));
+        }
+
+        ForeignExchangeInfoResource fxInfoResource = attributesResource.getForeignExchangeInfoResource();
+        if (fxInfoResource != null) {
+            attributesBuilder.withForeignExchangeInfo(
+                    new ForeignExchangeInfo(fxInfoResource.getContractReference(), fxInfoResource.getExchangeRate(),
+                            fxInfoResource.getOriginalAmount(), fxInfoResource.getOriginalCurrency()));
+        }
+
+        ChargesInformationResource chargesInformationResource = attributesResource.getChargesInformationResource();
+        if (chargesInformationResource != null) {
+            ChargesInformation.Builder chargesInformationBuilder =
+                    ChargesInformation.builder(chargesInformationResource.getBearerCode())
+                            .withReceiverCharge(chargesInformationResource.getReceiverChargesAmount(),
+                                    chargesInformationResource.getReceiverChargesCurrency());
+            chargesInformationResource.getSenderChargeResources()
+                    .forEach(resource ->
+                            chargesInformationBuilder.withSenderCharge(resource.getAmount(), resource.getCurrency()));
+            attributesBuilder.withChargesInformation(chargesInformationBuilder.build());
         }
 
         return attributesBuilder.build();

@@ -1,14 +1,13 @@
 package com.alwozniak.form3.service;
 
 import com.alwozniak.form3.domain.AccountData.AccountNumberCode;
-import com.alwozniak.form3.domain.FinancialTransaction;
+import com.alwozniak.form3.domain.*;
+import com.alwozniak.form3.domain.ChargesInformation.ChargeType;
 import com.alwozniak.form3.domain.FinancialTransaction.FinancialTransactionType;
-import com.alwozniak.form3.domain.FinancialTransactionAttributes;
 import com.alwozniak.form3.domain.FinancialTransactionAttributes.PaymentScheme;
 import com.alwozniak.form3.domain.FinancialTransactionAttributes.PaymentType;
 import com.alwozniak.form3.domain.FinancialTransactionAttributes.SchemePaymentSubType;
 import com.alwozniak.form3.domain.FinancialTransactionAttributes.SchemePaymentType;
-import com.alwozniak.form3.domain.TransactionParty;
 import com.alwozniak.form3.repository.FinancialTransactionRepository;
 import com.alwozniak.form3.resources.*;
 import com.alwozniak.form3.service.exception.PaymentNotFoundException;
@@ -22,9 +21,12 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
+import static com.alwozniak.form3.util.TestUtils.assertSenderChargeInfoForCurrency;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertTrue;
@@ -245,5 +247,56 @@ public class PaymentsServiceTests {
         assertThat(debtorParty.getAccountNumber(), is(accountNumber));
         assertThat(debtorParty.getBankId(), is(bankId));
         assertThat(debtorParty.getBankIdCode(), is(bankIdCode));
+    }
+
+    @Test
+    public void shouldCreateNewPaymentWithAttributesContainingForeignExchangeInfo() {
+        PaymentResourceData paymentResourceData = new PaymentResourceData();
+        PaymentAttributesResource paymentAttributesResource = new PaymentAttributesResource();
+        ForeignExchangeInfoResource foreignExchangeInfoResource = new ForeignExchangeInfoResource();
+        String contractReference = "FX123";
+        String originalCurrency = "USD";
+        foreignExchangeInfoResource.setContractReference(contractReference);
+        foreignExchangeInfoResource.setExchangeRateFromString("2.00000");
+        foreignExchangeInfoResource.setOriginalAmountFromString("145.87");
+        foreignExchangeInfoResource.setOriginalCurrency(originalCurrency);
+        paymentAttributesResource.setFxResource(foreignExchangeInfoResource);
+        paymentResourceData.setPaymentAttributesResource(paymentAttributesResource);
+
+        FinancialTransaction payment = paymentsService.createNewPaymentFromResource(paymentResourceData);
+
+        ForeignExchangeInfo foreignExchangeInfo = payment.getAttributes().getForeignExchangeInfo();
+        assertThat(foreignExchangeInfo.getContractReference(), is(contractReference));
+        assertThat(foreignExchangeInfo.getOriginalCurrency(), is(originalCurrency));
+        assertThat(foreignExchangeInfo.getOriginalAmount(), is(145.87));
+        assertThat(foreignExchangeInfo.getExchangeRate(), is(2.0));
+    }
+
+    @Test
+    public void shouldCreateNewPaymentWithAttributesContainingchargesInformantion() {
+        PaymentResourceData paymentResourceData = new PaymentResourceData();
+        PaymentAttributesResource paymentAttributesResource = new PaymentAttributesResource();
+        ChargesInformationResource chargesInformationResource = new ChargesInformationResource();
+        chargesInformationResource.setBearerCodeFromString("SHAR");
+        chargesInformationResource.setReceiverChargesAmountFromString("1.0");
+        String receiverChargeCurrency = "USD";
+        chargesInformationResource.setReceiverChargesCurrency(receiverChargeCurrency);
+        List<ChargeInfoForCurrencyResource> senderChargeResources = new ArrayList<>();
+        senderChargeResources.add(new ChargeInfoForCurrencyResource("7.98", "USD"));
+        senderChargeResources.add(new ChargeInfoForCurrencyResource("6.34", "GBP"));
+        chargesInformationResource.setSenderChargeResources(senderChargeResources);
+        paymentAttributesResource.setChargesInformationResource(chargesInformationResource);
+        paymentResourceData.setPaymentAttributesResource(paymentAttributesResource);
+
+        FinancialTransaction payment = paymentsService.createNewPaymentFromResource(paymentResourceData);
+
+        ChargesInformation chargesInformation = payment.getAttributes().getChargesInformation();
+        assertThat(chargesInformation.getBearerCode(), is(ChargeType.SHARED));
+        assertThat(chargesInformation.getReceiverChargesCurrency(), is(receiverChargeCurrency));
+        assertThat(chargesInformation.getReceiverChargesAmount(), is(1.0));
+        List<ChargeInfoForCurrency> senderCharges = chargesInformation.getSenderCharges();
+        assertThat(senderCharges.size(), is(2));
+        assertSenderChargeInfoForCurrency(senderCharges, "USD", 7.98);
+        assertSenderChargeInfoForCurrency(senderCharges, "GBP", 6.34);
     }
 }

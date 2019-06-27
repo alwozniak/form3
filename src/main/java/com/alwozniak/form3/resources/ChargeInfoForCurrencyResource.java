@@ -13,9 +13,19 @@ public class ChargeInfoForCurrencyResource {
         this.currency = chargeInfoForCurrency.getCurrency();
     }
 
+    public ChargeInfoForCurrencyResource(@JsonProperty("amount") String amountString,
+                                         @JsonProperty("currency") String currency) {
+        this.amount = Double.valueOf(amountString);
+        this.currency = currency;
+    }
+
     @JsonProperty("amount")
-    public String getAmount() {
+    public String getAmountString() {
         return amount == null ? null : String.format("%.2f", amount);
+    }
+
+    public Double getAmount() {
+        return this.amount;
     }
 
     @JsonProperty("currency")

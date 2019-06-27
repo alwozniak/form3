@@ -40,7 +40,10 @@ public class PaymentAttributesResource {
     private TransactionPartyResource debtorPartyResource;
 
     private ForeignExchangeInfo foreignExchangeInfo;
+    private ForeignExchangeInfoResource foreignExchangeInfoResource;
+
     private ChargesInformation chargesInformation;
+    private ChargesInformationResource chargesInformationResource;
 
     private TransactionParty sponsorParty;
     private TransactionPartyResource sponsorPartyResource;
@@ -238,13 +241,27 @@ public class PaymentAttributesResource {
     }
 
     @JsonProperty("fx")
-    public ForeignExchangeInfoResource getFx() {
+    public ForeignExchangeInfoResource createFxResource() {
         return foreignExchangeInfo == null ? null : new ForeignExchangeInfoResource(foreignExchangeInfo);
     }
 
+    @JsonProperty("fx")
+    public void setFxResource(ForeignExchangeInfoResource foreignExchangeInfoResource) {
+        this.foreignExchangeInfoResource = foreignExchangeInfoResource;
+    }
+
     @JsonProperty("charges_information")
-    public ChargesInformationResource getChargesInformation() {
+    public ChargesInformationResource createChargesInformationResource() {
         return chargesInformation == null ? null : new ChargesInformationResource(chargesInformation);
+    }
+
+    public ChargesInformationResource getChargesInformationResource() {
+        return this.chargesInformationResource;
+    }
+
+    @JsonProperty("charges_information")
+    public void setChargesInformationResource(ChargesInformationResource chargesInformationResource) {
+        this.chargesInformationResource = chargesInformationResource;
     }
 
     @JsonProperty("sponsor_party")
@@ -271,5 +288,9 @@ public class PaymentAttributesResource {
 
     private static String toSnakeCase(String text) {
         return text.replaceAll("([^_A-Z])([A-Z])", "$1_$2");
+    }
+
+    public ForeignExchangeInfoResource getForeignExchangeInfoResource() {
+        return this.foreignExchangeInfoResource;
     }
 }

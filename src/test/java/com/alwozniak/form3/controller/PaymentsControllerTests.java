@@ -25,8 +25,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import static com.alwozniak.form3.util.TestUtils.getDateOf;
-import static com.alwozniak.form3.util.TestUtils.getTestResource;
+import static com.alwozniak.form3.util.TestUtils.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -428,6 +427,40 @@ public class PaymentsControllerTests {
         assertThat(sponsorParty.getAccountNumber(), is("56781234"));
         assertThat(sponsorParty.getBankId(), is("123123"));
         assertThat(sponsorParty.getBankIdCode(), is("GBDSC"));
+    }
+
+    @Test
+    public void shouldPersistPaymentWithAttributesContainingFxInfo() throws Exception {
+        byte[] requestBody = getTestResource("payment-with-attributes-with-fx.json");
+        assertThat(repository.findAllPayments(), is(empty()));
+
+        mockMvc.perform(post("/payments").contentType(MediaType.APPLICATION_JSON_UTF8).content(requestBody))
+                .andExpect(status().isCreated());
+        FinancialTransaction transaction = getTheOnlyPersistedTransaction();
+        FinancialTransactionAttributes attributes = transaction.getAttributes();
+        ForeignExchangeInfo foreignExchangeInfo = attributes.getForeignExchangeInfo();
+        assertThat(foreignExchangeInfo.getContractReference(), is("FX123"));
+        assertThat(foreignExchangeInfo.getExchangeRate(), is(2.00000));
+        assertThat(foreignExchangeInfo.getOriginalAmount(), is(200.42));
+        assertThat(foreignExchangeInfo.getOriginalCurrency(), is("USD"));
+    }
+
+    @Test
+    public void shouldPersistPaymentWithAttributesContainingChargesInfo() throws Exception {
+        byte[] requestBody = getTestResource("payment-with-attributes-with-charges-information.json");
+        assertThat(repository.findAllPayments(), is(empty()));
+
+        mockMvc.perform(post("/payments").contentType(MediaType.APPLICATION_JSON_UTF8).content(requestBody))
+                .andExpect(status().isCreated());
+        FinancialTransaction transaction = getTheOnlyPersistedTransaction();
+        ChargesInformation chargesInformation = transaction.getAttributes().getChargesInformation();
+        assertThat(chargesInformation.getBearerCode(), is(ChargeType.SHARED));
+        assertThat(chargesInformation.getReceiverChargesAmount(), is(1.0));
+        assertThat(chargesInformation.getReceiverChargesCurrency(), is("USD"));
+        List<ChargeInfoForCurrency> senderCharges = chargesInformation.getSenderCharges();
+        assertThat(senderCharges.size(), is(2));
+        assertSenderChargeInfoForCurrency(senderCharges, "USD", 10.0);
+        assertSenderChargeInfoForCurrency(senderCharges, "GBP", 5.0);
     }
 
     //

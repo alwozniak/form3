@@ -1,0 +1,34 @@
+{
+  "type": "Payment",
+  "version": 0,
+  "organisation_id": "743d5b63-8e6f-432e-a8fa-c5d8d2ee5fcb",
+  "attributes": {
+    "amount": "100.21",
+    "currency": "GBP",
+    "charges_information": {
+      "bearer_code": "SHAR",
+      "sender_charges": [
+        {
+          "amount": "5.00",
+          "currency": "GBP"
+        },
+        {
+          "amount": "10.00",
+          "currency": "USD"
+        }
+      ],
+      "receiver_charges_amount": "1.00",
+      "receiver_charges_currency": "USD"
+    },
+    "end_to_end_reference": "Wil piano Jan",
+    "numeric_reference": "1002001",
+    "payment_id": "123456789012345678",
+    "payment_purpose": "Paying for goods/services",
+    "payment_scheme": "FPS",
+    "payment_type": "Credit",
+    "processing_date": "2017-01-18",
+    "reference": "Payment for Em's piano lessons",
+    "scheme_payment_sub_type": "InternetBanking",
+    "scheme_payment_type": "ImmediatePayment"
+  }
+}
