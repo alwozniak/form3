@@ -355,20 +355,21 @@ public class PaymentsServiceTests {
                 .withNumericReference("123123123456")
                 .build();
         payment.setAttributes(attributes);
+        financialTransactionRepository.save(payment);
         PaymentResourceData paymentResourceData = new PaymentResourceData();
+        String modifiedEndToEndReference = "Modified end to end reference";
+        String paymentId = "00998877665544";
         PaymentAttributesResource paymentAttributesResource = new PaymentAttributesResource();
         paymentAttributesResource.setAmountFromString("91.00");
-        String modifiedEndToEndReference = "Modified end to end reference";
         paymentAttributesResource.setEndToEndReference(modifiedEndToEndReference);
-        String paymentId = "00998877665544";
         paymentAttributesResource.setPaymentId(paymentId);
         paymentResourceData.setPaymentAttributesResource(paymentAttributesResource);
 
         FinancialTransaction modifiedPayment = paymentsService.updatePayment(payment.getId(), paymentResourceData);
 
-        FinancialTransaction persistedPayment = financialTransactionRepository.findById(modifiedPayment.getId())
+        FinancialTransaction fetchedPayment = financialTransactionRepository.findById(modifiedPayment.getId())
                 .orElseThrow(() -> new RuntimeException("Payment not found."));
-        FinancialTransactionAttributes persistedPaymentAttributes = persistedPayment.getAttributes();
+        FinancialTransactionAttributes persistedPaymentAttributes = fetchedPayment.getAttributes();
         assertThat(persistedPaymentAttributes.getAmount(), is(91.00));
         assertThat(persistedPaymentAttributes.getEndToEndReference(), is(modifiedEndToEndReference));
         assertThat(persistedPaymentAttributes.getPaymentId(), is(paymentId));

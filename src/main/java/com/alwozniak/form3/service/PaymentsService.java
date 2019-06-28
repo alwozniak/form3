@@ -38,7 +38,8 @@ public class PaymentsService {
         return financialTransactionRepository.save(payment);
     }
 
-    public FinancialTransaction updatePayment(UUID paymentId, PaymentResourceData paymentResourceData) throws PaymentNotFoundException {
+    public FinancialTransaction updatePayment(UUID paymentId, PaymentResourceData paymentResourceData)
+            throws PaymentNotFoundException {
         return financialTransactionRepository.findById(paymentId)
                 .map(payment -> {
                     payment.updateFields(paymentResourceData.getOrganisationId(),

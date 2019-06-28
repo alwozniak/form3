@@ -14,6 +14,19 @@ import static org.hamcrest.Matchers.nullValue;
 
 public class FinancialTransactionAttributesTests {
 
+    private static final Double AMOUNT = 100.21;
+    private static final String CURRENCY = "GBP";
+    private static final String END_TO_END_REFERENCE = "Wil piano Jan";
+    private static final String NUMERIC_REFERENCE = "1002001";
+    private static final String PAYMENT_ID = "123456789012345678";
+    private static final String PAYMENT_PURPOSE = "Paying for goods/services";
+    private static final PaymentScheme PAYMENT_SCHEME = PaymentScheme.FPS;
+    private static final PaymentType PAYMENT_TYPE = PaymentType.CREDIT;
+    private static final Date PROCESSING_DATE = getDateOf(18, 1, 2017);
+    private static final String REFERENCE = "Payment for Em's piano lessons";
+    private static final SchemePaymentSubType SCHEME_PAYMENT_SUB_TYPE = SchemePaymentSubType.INTERNET_BANKING;
+    private static final SchemePaymentType SCHEME_PAYMENT_TYPE = SchemePaymentType.IMMEDIATE_PAYMENT;
+
     @Test
     public void shouldCreateEmptyFinancialTransactionsAttributes() {
         FinancialTransaction transaction = FinancialTransaction.newPayment(UUID.randomUUID());
@@ -26,42 +39,12 @@ public class FinancialTransactionAttributesTests {
     @Test
     public void shouldCorrectlySetSimpleTypeAttributesByBuilder() {
         FinancialTransaction transaction = FinancialTransaction.newPayment(UUID.randomUUID());
-        Double amount = 100.21;
-        String currency = "GBP";
-        String endToEndReference = "Wil piano Jan";
-        String numericReference = "1002001";
-        String paymentId = "123456789012345678";
-        String paymentPurpose = "Paying for goods/services";
-        PaymentScheme paymentScheme = PaymentScheme.FPS;
-        PaymentType paymentType = PaymentType.CREDIT;
-        Date processingDate = getDateOf(18, 1, 2017);
-        String reference = "Payment for Em's piano lessons";
-        SchemePaymentSubType schemePaymentSubType = SchemePaymentSubType.INTERNET_BANKING;
-        SchemePaymentType schemePaymentType = SchemePaymentType.IMMEDIATE_PAYMENT;
 
-        FinancialTransactionAttributes attributes = builder(transaction)
-                .withAmountInCurrency(amount, currency)
-                .withEndToEndReference(endToEndReference)
-                .withNumericReference(numericReference)
-                .withPaymentData(paymentId, paymentPurpose, paymentType)
-                .withProcessingDate(processingDate)
-                .withReference(reference)
-                .withPaymentSchemeData(paymentScheme, schemePaymentType, schemePaymentSubType)
-                .build();
+        FinancialTransactionAttributes attributes = createAttributesWithDefaultValues(transaction);
 
-        assertThat(attributes.getAmount(), is(amount));
-        assertThat(attributes.getCurrency(), is(currency));
-        assertThat(attributes.getEndToEndReference(), is(endToEndReference));
-        assertThat(attributes.getNumericReference(), is(numericReference));
-        assertThat(attributes.getPaymentId(), is(paymentId));
-        assertThat(attributes.getPaymentPurpose(), is(paymentPurpose));
-        assertThat(attributes.getPaymentScheme(), is(paymentScheme));
-        assertThat(attributes.getPaymentType(), is(paymentType));
-        assertThat(attributes.getProcessingDate(), is(processingDate));
-        assertThat(attributes.getReference(), is(reference));
-        assertThat(attributes.getSchemePaymentSubType(), is(schemePaymentSubType));
-        assertThat(attributes.getSchemePaymentType(), is(schemePaymentType));
+        assertDefaultValuesForAttributes(attributes);
     }
+
 
     @Test
     public void shouldCorrectlySetBeneficiaryAndDebtorParties() {
@@ -76,5 +59,75 @@ public class FinancialTransactionAttributesTests {
 
         assertThat(attributes.getBeneficiaryParty(), is(beneficiary));
         assertThat(attributes.getDebtorParty(), is(debtor));
+    }
+
+    @Test
+    public void shouldNotModifyFieldsWhenUpdatingWithNullValues() {
+        FinancialTransaction transaction = FinancialTransaction.newPayment(UUID.randomUUID());
+        FinancialTransactionAttributes attributes = createAttributesWithDefaultValues(transaction);
+
+        attributes.updateFields(null, null, null, null, null,
+                null, null, null,null, null,
+                null, null);
+
+        assertDefaultValuesForAttributes(attributes);
+    }
+
+    @Test
+    public void shouldModifyFieldsWhenUpdatingWithNotNullValues() {
+        FinancialTransaction transaction = FinancialTransaction.newPayment(UUID.randomUUID());
+        FinancialTransactionAttributes attributes = createAttributesWithDefaultValues(transaction);
+        Double newAmount = 90.89;
+        String newCurrency = "CHF";
+        String newEndToEndReference = "Modified end to end reference";
+        String newNumericReference = "00998877";
+        String newPaymentId = "0987654321654";
+        String newPaymentPurpose = "Modified payment purpose";
+        Date newProcessingDate = getDateOf(9, 9, 2017);
+        String newReference = "Modified reference";
+
+        attributes.updateFields(newAmount, newCurrency, newEndToEndReference, newNumericReference, newPaymentId,
+                newPaymentPurpose, null, null, newProcessingDate, newReference,
+                null, null);
+
+        assertThat(attributes.getAmount(), is(newAmount));
+        assertThat(attributes.getCurrency(), is(newCurrency));
+        assertThat(attributes.getEndToEndReference(), is(newEndToEndReference));
+        assertThat(attributes.getNumericReference(), is(newNumericReference));
+        assertThat(attributes.getPaymentId(), is(newPaymentId));
+        assertThat(attributes.getPaymentPurpose(), is(newPaymentPurpose));
+        assertThat(attributes.getProcessingDate(), is(newProcessingDate));
+        assertThat(attributes.getReference(), is(newReference));
+    }
+
+    //
+    // Helper methods.
+    //
+
+    private FinancialTransactionAttributes createAttributesWithDefaultValues(FinancialTransaction transaction) {
+        return builder(transaction)
+                .withAmountInCurrency(AMOUNT, CURRENCY)
+                .withEndToEndReference(END_TO_END_REFERENCE)
+                .withNumericReference(NUMERIC_REFERENCE)
+                .withPaymentData(PAYMENT_ID, PAYMENT_PURPOSE, PAYMENT_TYPE)
+                .withProcessingDate(PROCESSING_DATE)
+                .withReference(REFERENCE)
+                .withPaymentSchemeData(PAYMENT_SCHEME, SCHEME_PAYMENT_TYPE, SCHEME_PAYMENT_SUB_TYPE)
+                .build();
+    }
+
+    private void assertDefaultValuesForAttributes(FinancialTransactionAttributes attributes) {
+        assertThat(attributes.getAmount(), is(AMOUNT));
+        assertThat(attributes.getCurrency(), is(CURRENCY));
+        assertThat(attributes.getEndToEndReference(), is(END_TO_END_REFERENCE));
+        assertThat(attributes.getNumericReference(), is(NUMERIC_REFERENCE));
+        assertThat(attributes.getPaymentId(), is(PAYMENT_ID));
+        assertThat(attributes.getPaymentPurpose(), is(PAYMENT_PURPOSE));
+        assertThat(attributes.getPaymentScheme(), is(PAYMENT_SCHEME));
+        assertThat(attributes.getPaymentType(), is(PAYMENT_TYPE));
+        assertThat(attributes.getProcessingDate(), is(PROCESSING_DATE));
+        assertThat(attributes.getReference(), is(REFERENCE));
+        assertThat(attributes.getSchemePaymentSubType(), is(SCHEME_PAYMENT_SUB_TYPE));
+        assertThat(attributes.getSchemePaymentType(), is(SCHEME_PAYMENT_TYPE));
     }
 }
