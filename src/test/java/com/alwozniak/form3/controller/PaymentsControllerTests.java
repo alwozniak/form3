@@ -503,6 +503,26 @@ public class PaymentsControllerTests {
     }
 
     //
+    // Tests for DELETE /payments/:id.
+    //
+
+    @Test
+    public void shouldReturnResourceNotFoundResponseWhenPaymentWithGivenIdDoesNotExist() throws Exception {
+        UUID nonExistingPaymentId = UUID.randomUUID();
+
+        mockMvc.perform(delete(PAYMENTS_PATH + "/" + nonExistingPaymentId))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void shouldDeletePaymentWithGivenIdIfItExists() throws Exception {
+        FinancialTransaction existingPayment = repository.save(FinancialTransaction.newPayment(UUID.randomUUID()));
+
+        mockMvc.perform(delete(PAYMENTS_PATH + "/" + existingPayment.getId()))
+                .andExpect(status().isNoContent());
+    }
+
+    //
     // Helper methods.
     //
 

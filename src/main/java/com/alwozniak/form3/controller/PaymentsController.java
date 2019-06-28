@@ -53,4 +53,14 @@ public class PaymentsController {
             throw new ResourceNotFoundException(e.getMessage());
         }
     }
+
+    @DeleteMapping(value = "/{paymentId}")
+    public ResponseEntity<?> deletePayment(@PathVariable("paymentId") UUID paymentId) {
+        try {
+            paymentsService.deletePayment(paymentId);
+            return ResponseEntity.noContent().build();
+        } catch (PaymentNotFoundException e) {
+            throw new ResourceNotFoundException(e.getMessage());
+        }
+    }
 }

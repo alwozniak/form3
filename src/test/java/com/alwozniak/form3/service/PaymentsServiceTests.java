@@ -515,6 +515,25 @@ public class PaymentsServiceTests {
     }
 
     //
+    // Tests for deleting a payment.
+    //
+
+    @Test(expected = PaymentNotFoundException.class)
+    public void shouldThrowPaymentNotFoundExceptionWhenTryingToDeleteNonExistingPayment() throws PaymentNotFoundException {
+        paymentsService.deletePayment(UUID.randomUUID());
+    }
+
+    @Test
+    public void shouldDeleteExistingPayment() throws PaymentNotFoundException {
+        FinancialTransaction existingPayment = financialTransactionRepository.save(FinancialTransaction.newPayment(UUID.randomUUID()));
+        UUID existingPaymentId = existingPayment.getId();
+
+        paymentsService.deletePayment(existingPaymentId);
+
+        assertFalse(financialTransactionRepository.existsById(existingPaymentId));
+    }
+
+    //
     // Helper methods.
     //
 

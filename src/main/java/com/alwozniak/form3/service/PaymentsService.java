@@ -79,6 +79,14 @@ public class PaymentsService {
                 .orElseThrow(() -> new PaymentNotFoundException(paymentId));
     }
 
+    public void deletePayment(UUID paymentId) throws PaymentNotFoundException {
+        if (financialTransactionRepository.existsById(paymentId)) {
+            financialTransactionRepository.deleteById(paymentId);
+        } else {
+            throw new PaymentNotFoundException(paymentId);
+        }
+    }
+
     private void createOrUpdateChargesInformation(FinancialTransactionAttributes paymentAttributes,
                                                   ChargesInformationResource resources) {
         if (resources != null) {
