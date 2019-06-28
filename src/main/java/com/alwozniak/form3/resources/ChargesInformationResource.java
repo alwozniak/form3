@@ -46,6 +46,10 @@ public class ChargesInformationResource {
         return this.bearerCode;
     }
 
+    public void setBearerCode(ChargeType bearerCode) {
+        this.bearerCode = bearerCode;
+    }
+
     @JsonProperty("receiver_charges_amount")
     public String getReceiverChargesAmountString() {
         return receiverChargesAmount == null ? null : String.format("%.2f", receiverChargesAmount);
@@ -54,6 +58,10 @@ public class ChargesInformationResource {
     @JsonProperty("receiver_charges_amount")
     public void setReceiverChargesAmountFromString(String receiverChargesAmountString) {
         this.receiverChargesAmount = Double.valueOf(receiverChargesAmountString);
+    }
+
+    public void setReceiverChargesAmount(Double receiverChargesAmount) {
+        this.receiverChargesAmount = receiverChargesAmount;
     }
 
     @JsonIgnore

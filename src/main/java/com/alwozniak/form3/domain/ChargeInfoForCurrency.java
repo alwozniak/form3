@@ -15,10 +15,10 @@ public class ChargeInfoForCurrency {
     @GenericGenerator(name = "uuid2", strategy = "uuid2")
     private UUID id;
 
-    @Column(nullable = false, updatable = false)
+    @Column(name = "currency")
     private String currency;
 
-    @Column(nullable = false, updatable = false)
+    @Column(name = "amount")
     private Double amount;
 
     @OneToOne(mappedBy = "receiverCharges")
@@ -49,7 +49,15 @@ public class ChargeInfoForCurrency {
         return amount;
     }
 
+    public void setAmount(Double amount) {
+        this.amount = amount;
+    }
+
     public String getCurrency() {
         return currency;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
     }
 }

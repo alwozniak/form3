@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 @Service
 public class PaymentsService {
@@ -69,11 +70,32 @@ public class PaymentsService {
                                     FinancialTransactionAttributes::setSponsorParty);
                             createOrUpdateForeignExchangeInfo(paymentAttributes,
                                     attributesResource.getForeignExchangeInfoResource());
+                            createOrUpdateChargesInformation(paymentAttributes,
+                                    attributesResource.getChargesInformationResource());
                         }
                     }
                     return financialTransactionRepository.save(payment);
                 })
                 .orElseThrow(() -> new PaymentNotFoundException(paymentId));
+    }
+
+    private void createOrUpdateChargesInformation(FinancialTransactionAttributes paymentAttributes,
+                                                  ChargesInformationResource resources) {
+        if (resources != null) {
+            ChargesInformation chargesInformation = paymentAttributes.getChargesInformation();
+            if (chargesInformation == null) {
+                paymentAttributes.setChargesInformation(createChargesInformationFromResource(resources));
+            } else {
+                chargesInformation.updateFields(resources.getBearerCode(), resources.getReceiverChargesAmount(),
+                        resources.getReceiverChargesCurrency());
+                List<ChargeInfoForCurrency> newSenderChargesList = resources.getSenderChargeResources().stream()
+                        .map(chargeResource ->
+                                new ChargeInfoForCurrency(chargeResource.getCurrency(), chargeResource.getAmount())
+                        ).collect(Collectors.toList());
+                chargesInformation.setSenderCharges(newSenderChargesList);
+            }
+        }
+
     }
 
     private void createOrUpdateForeignExchangeInfo(FinancialTransactionAttributes paymentAttributes,
@@ -170,9 +192,11 @@ public class PaymentsService {
                 ChargesInformation.builder(chargesInformationResource.getBearerCode())
                         .withReceiverCharge(chargesInformationResource.getReceiverChargesAmount(),
                                 chargesInformationResource.getReceiverChargesCurrency());
-        chargesInformationResource.getSenderChargeResources()
-                .forEach(resource ->
-                        chargesInformationBuilder.withSenderCharge(resource.getAmount(), resource.getCurrency()));
+        List<ChargeInfoForCurrencyResource> senderChargeResources = chargesInformationResource.getSenderChargeResources();
+        if (senderChargeResources != null) {
+            senderChargeResources.forEach(resource ->
+                    chargesInformationBuilder.withSenderCharge(resource.getAmount(), resource.getCurrency()));
+        }
         return chargesInformationBuilder.build();
     }
 

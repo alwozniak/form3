@@ -11,10 +11,6 @@ import java.util.UUID;
 @Table(name = "charges_information")
 public class ChargesInformation {
 
-    public void setFinancialTransactionAttributes(FinancialTransactionAttributes financialTransactionAttributes) {
-        this.financialTransactionAttributes = financialTransactionAttributes;
-    }
-
     public enum ChargeType {
         SHARED
     }
@@ -101,5 +97,25 @@ public class ChargesInformation {
 
     public List<ChargeInfoForCurrency> getSenderCharges() {
         return senderCharges;
+    }
+
+    public void setSenderCharges(List<ChargeInfoForCurrency> senderCharges) {
+        this.senderCharges = senderCharges;
+    }
+
+    public void setFinancialTransactionAttributes(FinancialTransactionAttributes financialTransactionAttributes) {
+        this.financialTransactionAttributes = financialTransactionAttributes;
+    }
+
+    public void updateFields(ChargeType chargeType, Double receiverChargesAmount, String receiverChargesCurrency) {
+        if (chargeType != null) {
+            this.chargeType = chargeType;
+        }
+        if (receiverChargesAmount != null) {
+            this.receiverCharges.setAmount(receiverChargesAmount);
+        }
+        if (receiverChargesCurrency != null) {
+            this.receiverCharges.setCurrency(receiverChargesCurrency);
+        }
     }
 }

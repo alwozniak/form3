@@ -336,6 +336,10 @@ public class FinancialTransactionAttributes {
         return chargesInformation;
     }
 
+    public void setChargesInformation(ChargesInformation chargesInformation) {
+        this.chargesInformation = chargesInformation;
+    }
+
     public TransactionParty getSponsorParty() {
         return sponsorParty;
     }

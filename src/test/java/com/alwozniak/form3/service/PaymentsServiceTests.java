@@ -440,7 +440,7 @@ public class PaymentsServiceTests {
     }
 
     @Test
-    public void shouldUpdateForeignExchangeInfoFxIsPresentBeforeUpdate() throws PaymentNotFoundException {
+    public void shouldUpdateForeignExchangeInfoFxIfPresentBeforeUpdate() throws PaymentNotFoundException {
         FinancialTransaction payment = createNewPayment(UUID.randomUUID());
         FinancialTransactionAttributes attributes = FinancialTransactionAttributes.builder(payment)
                 .withForeignExchangeInfo(new ForeignExchangeInfo("FX345", 2.34, 200.00, "JPN"))
@@ -458,6 +458,60 @@ public class PaymentsServiceTests {
         FinancialTransaction fetchedPayment = findByIdOrThrowRuntimeException(updatedPayment.getId());
         ForeignExchangeInfo foreignExchangeInfo = fetchedPayment.getAttributes().getForeignExchangeInfo();
         assertForeignExchangeInfoFields(foreignExchangeInfo, newContractReference, newOriginalCurrency, newExchangeRate, newOriginalAmount);
+    }
+
+    @Test
+    public void shouldCreateChargesInformationIfNotPresentInAttributesWhileUpdating() throws PaymentNotFoundException {
+        FinancialTransaction payment = createNewPayment(UUID.randomUUID());
+        FinancialTransactionAttributes attributes = FinancialTransactionAttributes.builder(payment).build();
+        setAttributesAndSave(payment, attributes);
+
+        ChargeType bearerCode = ChargeType.SHARED;
+        Double receiverChargesAmount = 3.00;
+        String receiverChargesCurrency = "USD";
+        PaymentResourceData resourceData = createPaymentResourceDataWithChargesInformation(bearerCode, receiverChargesAmount, receiverChargesCurrency);
+
+        FinancialTransaction updatedPayment = paymentsService.updatePayment(payment.getId(), resourceData);
+
+        FinancialTransaction fetchedPayment = findByIdOrThrowRuntimeException(updatedPayment.getId());
+        ChargesInformation chargesInformation = fetchedPayment.getAttributes().getChargesInformation();
+        assertThat(chargesInformation.getBearerCode(), is(ChargeType.SHARED));
+        assertThat(chargesInformation.getReceiverChargesAmount(), is(receiverChargesAmount));
+        assertThat(chargesInformation.getReceiverChargesCurrency(), is(receiverChargesCurrency));
+    }
+
+    @Test
+    public void shouldCreateChargesInformationIfPresentInAttributesWhileUpdating() throws PaymentNotFoundException {
+        FinancialTransaction payment = createNewPayment(UUID.randomUUID());
+        ChargesInformation chargesInformation = ChargesInformation.builder(ChargeType.SHARED)
+                .withReceiverCharge(1.0, "GBP")
+                .withSenderCharge(2.0, "USD")
+                .withSenderCharge(3.0, "GBP")
+                .build();
+        FinancialTransactionAttributes attributes = FinancialTransactionAttributes.builder(payment)
+                .withChargesInformation(chargesInformation)
+                .build();
+        setAttributesAndSave(payment, attributes);
+        Double newReceiverChargesAmount = 3.00;
+        PaymentResourceData resourceData = new PaymentResourceData();
+        PaymentAttributesResource attributesResource = new PaymentAttributesResource();
+        ChargesInformationResource chargesInformationResource = new ChargesInformationResource();
+        chargesInformationResource.setReceiverChargesAmount(newReceiverChargesAmount);
+        chargesInformationResource.setSenderChargeResources(Collections.singletonList(
+                new ChargeInfoForCurrencyResource("1.50", "CHF")));
+        attributesResource.setChargesInformationResource(chargesInformationResource);
+        resourceData.setPaymentAttributesResource(attributesResource);
+
+        FinancialTransaction updatedPayment = paymentsService.updatePayment(payment.getId(), resourceData);
+
+        FinancialTransaction fetchedPayment = findByIdOrThrowRuntimeException(updatedPayment.getId());
+        ChargesInformation fetchedChargesInformation = fetchedPayment.getAttributes().getChargesInformation();
+        assertThat(fetchedChargesInformation.getReceiverChargesAmount(), is(newReceiverChargesAmount));
+        List<ChargeInfoForCurrency> senderCharges = fetchedChargesInformation.getSenderCharges();
+        assertThat(senderCharges.size(), is(1));
+        ChargeInfoForCurrency chargeInfoForCurrency = senderCharges.get(0);
+        assertThat(chargeInfoForCurrency.getAmount(), is(1.5));
+        assertThat(chargeInfoForCurrency.getCurrency(), is("CHF"));
     }
 
     //
@@ -526,5 +580,19 @@ public class PaymentsServiceTests {
         assertThat(foreignExchangeInfo.getExchangeRate(), is(exchangeRate));
         assertThat(foreignExchangeInfo.getOriginalAmount(), is(originalAmount));
         assertThat(foreignExchangeInfo.getOriginalCurrency(), is(originalCurrency));
+    }
+
+    private PaymentResourceData createPaymentResourceDataWithChargesInformation(ChargeType bearerCode,
+                                                                                Double receiverChargesAmount,
+                                                                                String receiverChargesCurrency) {
+        PaymentResourceData paymentResourceData = new PaymentResourceData();
+        PaymentAttributesResource attributesResource = new PaymentAttributesResource();
+        ChargesInformationResource chargesInformationResource = new ChargesInformationResource();
+        chargesInformationResource.setBearerCode(bearerCode);
+        chargesInformationResource.setReceiverChargesAmount(receiverChargesAmount);
+        chargesInformationResource.setReceiverChargesCurrency(receiverChargesCurrency);
+        attributesResource.setChargesInformationResource(chargesInformationResource);
+        paymentResourceData.setPaymentAttributesResource(attributesResource);
+        return paymentResourceData;
     }
 }
