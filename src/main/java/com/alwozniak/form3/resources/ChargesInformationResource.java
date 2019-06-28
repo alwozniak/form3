@@ -3,6 +3,7 @@ package com.alwozniak.form3.resources;
 import com.alwozniak.form3.domain.ChargeInfoForCurrency;
 import com.alwozniak.form3.domain.ChargesInformation;
 import com.alwozniak.form3.domain.ChargesInformation.ChargeType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
@@ -40,6 +41,7 @@ public class ChargesInformationResource {
         }
     }
 
+    @JsonIgnore
     public ChargeType getBearerCode() {
         return this.bearerCode;
     }
@@ -54,6 +56,7 @@ public class ChargesInformationResource {
         this.receiverChargesAmount = Double.valueOf(receiverChargesAmountString);
     }
 
+    @JsonIgnore
     public Double getReceiverChargesAmount() {
         return this.receiverChargesAmount;
     }
@@ -81,6 +84,7 @@ public class ChargesInformationResource {
         this.senderChargeResources = senderChargeResources;
     }
 
+    @JsonIgnore
     public List<ChargeInfoForCurrencyResource> getSenderChargeResources() {
         return this.senderChargeResources;
     }

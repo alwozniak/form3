@@ -8,7 +8,9 @@ import com.alwozniak.form3.domain.FinancialTransactionAttributes.SchemePaymentSu
 import com.alwozniak.form3.domain.FinancialTransactionAttributes.SchemePaymentType;
 import com.alwozniak.form3.domain.ForeignExchangeInfo;
 import com.alwozniak.form3.domain.TransactionParty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.CaseUtils;
 
@@ -132,6 +134,7 @@ public class PaymentAttributesResource {
         this.paymentPurpose = paymentPurpose;
     }
 
+    @JsonIgnore
     public PaymentScheme getPaymentScheme() {
         return this.paymentScheme;
     }
@@ -151,6 +154,7 @@ public class PaymentAttributesResource {
         return paymentType == null ? null : StringUtils.capitalize(paymentType.name().toLowerCase());
     }
 
+    @JsonIgnore
     public PaymentType getPaymentType() {
         return this.paymentType;
     }
@@ -165,6 +169,7 @@ public class PaymentAttributesResource {
         return processingDate == null ? null : DATE_FORMAT.format(processingDate);
     }
 
+    @JsonIgnore
     public Date getProcessingDate() {
         return this.processingDate;
     }
@@ -189,6 +194,7 @@ public class PaymentAttributesResource {
         return schemePaymentType == null ? null : toCamelCase(schemePaymentType.name());
     }
 
+    @JsonIgnore
     public SchemePaymentType getSchemePaymentType() {
         return this.schemePaymentType;
     }
@@ -203,6 +209,7 @@ public class PaymentAttributesResource {
         return schemePaymentSubType == null ? null : toCamelCase(schemePaymentSubType.name());
     }
 
+    @JsonIgnore
     public SchemePaymentSubType getSchemePaymentSubType() {
         return this.schemePaymentSubType;
     }
@@ -217,6 +224,7 @@ public class PaymentAttributesResource {
         return beneficiaryParty == null ? null : new TransactionPartyResource(beneficiaryParty);
     }
 
+    @JsonIgnore
     public TransactionPartyResource getBeneficiaryPartyResource() {
         return this.beneficiaryPartyResource;
     }
@@ -236,6 +244,7 @@ public class PaymentAttributesResource {
         this.debtorPartyResource = debtorPartyResource;
     }
 
+    @JsonIgnore
     public TransactionPartyResource getDebtorPartyResource() {
         return this.debtorPartyResource;
     }
@@ -250,11 +259,17 @@ public class PaymentAttributesResource {
         this.foreignExchangeInfoResource = foreignExchangeInfoResource;
     }
 
+    @JsonIgnore
+    public ForeignExchangeInfoResource getForeignExchangeInfoResource() {
+        return this.foreignExchangeInfoResource;
+    }
+
     @JsonProperty("charges_information")
     public ChargesInformationResource createChargesInformationResource() {
         return chargesInformation == null ? null : new ChargesInformationResource(chargesInformation);
     }
 
+    @JsonIgnore
     public ChargesInformationResource getChargesInformationResource() {
         return this.chargesInformationResource;
     }
@@ -274,6 +289,7 @@ public class PaymentAttributesResource {
         this.sponsorPartyResource = sponsorPartyResource;
     }
 
+    @JsonIgnore
     public TransactionPartyResource getSponsorPartyResource() {
         return this.sponsorPartyResource;
     }
@@ -288,9 +304,5 @@ public class PaymentAttributesResource {
 
     private static String toSnakeCase(String text) {
         return text.replaceAll("([^_A-Z])([A-Z])", "$1_$2");
-    }
-
-    public ForeignExchangeInfoResource getForeignExchangeInfoResource() {
-        return this.foreignExchangeInfoResource;
     }
 }

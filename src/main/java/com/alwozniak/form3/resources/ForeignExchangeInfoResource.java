@@ -1,6 +1,7 @@
 package com.alwozniak.form3.resources;
 
 import com.alwozniak.form3.domain.ForeignExchangeInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ForeignExchangeInfoResource {
@@ -41,6 +42,7 @@ public class ForeignExchangeInfoResource {
         this.exchangeRate = Double.valueOf(exchangeRateString);
     }
 
+    @JsonIgnore
     public Double getExchangeRate() {
         return this.exchangeRate;
     }
@@ -55,6 +57,7 @@ public class ForeignExchangeInfoResource {
         this.originalAmount = Double.valueOf(amountString);
     }
 
+    @JsonIgnore
     public Double getOriginalAmount() {
         return this.originalAmount;
     }

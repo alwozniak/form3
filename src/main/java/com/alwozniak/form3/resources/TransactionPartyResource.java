@@ -2,6 +2,7 @@ package com.alwozniak.form3.resources;
 
 import com.alwozniak.form3.domain.AccountData.AccountNumberCode;
 import com.alwozniak.form3.domain.TransactionParty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class TransactionPartyResource {
@@ -65,6 +66,7 @@ public class TransactionPartyResource {
         return accountNumberCode == null ? null : accountNumberCode.name();
     }
 
+    @JsonIgnore
     public AccountNumberCode getAccountNumberCode() {
         return this.accountNumberCode;
     }

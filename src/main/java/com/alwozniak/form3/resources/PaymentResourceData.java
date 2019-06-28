@@ -3,6 +3,7 @@ package com.alwozniak.form3.resources;
 import com.alwozniak.form3.domain.FinancialTransaction;
 import com.alwozniak.form3.domain.FinancialTransaction.FinancialTransactionType;
 import com.alwozniak.form3.domain.FinancialTransactionAttributes;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
 
@@ -39,6 +40,7 @@ public class PaymentResourceData {
         this.transactionType = FinancialTransactionType.valueOf(transactionTypeString.toUpperCase());
     }
 
+    @JsonIgnore
     public FinancialTransactionType getTransactionType() {
         return this.transactionType;
     }
@@ -68,6 +70,7 @@ public class PaymentResourceData {
         this.paymentAttributesResource = paymentAttributesResource;
     }
 
+    @JsonIgnore
     public PaymentAttributesResource getPaymentAttributesResource() {
         return this.paymentAttributesResource;
     }
@@ -82,6 +85,7 @@ public class PaymentResourceData {
         this.organisationId = UUID.fromString(organisationIdString);
     }
 
+    @JsonIgnore
     public UUID getOrganisationId() {
         return organisationId;
     }

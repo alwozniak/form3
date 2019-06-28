@@ -1,6 +1,7 @@
 package com.alwozniak.form3.resources;
 
 import com.alwozniak.form3.domain.ChargeInfoForCurrency;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ChargeInfoForCurrencyResource {
@@ -24,6 +25,7 @@ public class ChargeInfoForCurrencyResource {
         return amount == null ? null : String.format("%.2f", amount);
     }
 
+    @JsonIgnore
     public Double getAmount() {
         return this.amount;
     }
