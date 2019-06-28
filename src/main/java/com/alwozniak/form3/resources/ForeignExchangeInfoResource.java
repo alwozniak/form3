@@ -47,6 +47,10 @@ public class ForeignExchangeInfoResource {
         return this.exchangeRate;
     }
 
+    public void setExchangeRate(Double exchangeRate) {
+        this.exchangeRate = exchangeRate;
+    }
+
     @JsonProperty("original_amount")
     public String getOriginalAmountString() {
         return originalAmount == null ? null : String.format("%.2f", originalAmount);
@@ -62,6 +66,10 @@ public class ForeignExchangeInfoResource {
         return this.originalAmount;
     }
 
+    public void setOriginalAmount(Double originalAmount) {
+        this.originalAmount = originalAmount;
+    }
+
     @JsonProperty("original_currency")
     public String getOriginalCurrency() {
         return originalCurrency;
@@ -71,4 +79,5 @@ public class ForeignExchangeInfoResource {
     public void setOriginalCurrency(String currency) {
         this.originalCurrency = currency;
     }
+
 }

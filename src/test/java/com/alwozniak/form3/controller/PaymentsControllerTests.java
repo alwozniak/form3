@@ -497,6 +497,8 @@ public class PaymentsControllerTests {
                 .content(requestBody)
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
+                // Check if returned resource contains new sub-resources and fields -- one example field should be enough,
+                // since overall resource creation is tested somewhere else.
                 .andExpect(jsonPath("$.data.attributes.debtor_party.bank_id", is("203301")));
     }
 

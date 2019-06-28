@@ -353,8 +353,7 @@ public class PaymentsServiceTests {
                 .withEndToEndReference("End to end reference")
                 .withNumericReference("123123123456")
                 .build();
-        payment.setAttributes(attributes);
-        financialTransactionRepository.save(payment);
+        setAttributesAndSave(payment, attributes);
         PaymentResourceData paymentResourceData = new PaymentResourceData();
         String modifiedEndToEndReference = "Modified end to end reference";
         String paymentId = "00998877665544";
@@ -376,8 +375,7 @@ public class PaymentsServiceTests {
     @Test
     public void shouldCreateBeneficiaryDebtorAndSponsorPartiesIfNotPresentWhenUpdatingPayment() throws PaymentNotFoundException {
         FinancialTransaction payment = createNewPayment(UUID.randomUUID());
-        payment.setAttributes(FinancialTransactionAttributes.builder(payment).build());
-        financialTransactionRepository.save(payment);
+        setAttributesAndSave(payment, FinancialTransactionAttributes.builder(payment).build());
 
         String beneficiaryAccountNumber = "DE170000222299992222111122";
         String debtorAccountNumber = "GB119999888877775555333312";
@@ -406,8 +404,7 @@ public class PaymentsServiceTests {
                 .withDebtor(createTransactionPartyWithAccountNumber(debtorAccountNumber))
                 .withSponsorParty(createTransactionPartyWithAccountNumber(sponsorAccountNumber))
                 .build();
-        payment.setAttributes(attributes);
-        financialTransactionRepository.save(payment);
+        setAttributesAndSave(payment, attributes);
         String newBeneficiaryAccountNumber = "AU1700002222999922212345367";
         String newDebtorAccountNumber = "FR1199998888777755553653565";
         String newSponsorAccountNumber = "419255363";
@@ -422,6 +419,45 @@ public class PaymentsServiceTests {
                 fetchedAttributes.getBeneficiaryParty());
         assertTransactionPartyPresentWithAccountNumber(newDebtorAccountNumber, fetchedAttributes.getDebtorParty());
         assertTransactionPartyPresentWithAccountNumber(newSponsorAccountNumber, fetchedAttributes.getSponsorParty());
+    }
+
+    @Test
+    public void shouldCreateForeignExchangeInfoFxIsNotPresentInAttributesWhileUpdating() throws PaymentNotFoundException {
+        FinancialTransaction payment = createNewPayment(UUID.randomUUID());
+        FinancialTransactionAttributes attributes = FinancialTransactionAttributes.builder(payment).build();
+        setAttributesAndSave(payment, attributes);
+        String contractReference = "FX123";
+        String originalCurrency = "USD";
+        double exchangeRate = 1.56;
+        double originalAmount = 100.67;
+        PaymentResourceData resourceData = createPaymentResourceDataWithFxInfo(contractReference, originalCurrency, exchangeRate, originalAmount);
+
+        FinancialTransaction updatedPayment = paymentsService.updatePayment(payment.getId(), resourceData);
+
+        FinancialTransaction fetchedPayment = findByIdOrThrowRuntimeException(updatedPayment.getId());
+        ForeignExchangeInfo foreignExchangeInfo = fetchedPayment.getAttributes().getForeignExchangeInfo();
+        assertForeignExchangeInfoFields(foreignExchangeInfo, contractReference, originalCurrency, exchangeRate, originalAmount);
+    }
+
+    @Test
+    public void shouldUpdateForeignExchangeInfoFxIsPresentBeforeUpdate() throws PaymentNotFoundException {
+        FinancialTransaction payment = createNewPayment(UUID.randomUUID());
+        FinancialTransactionAttributes attributes = FinancialTransactionAttributes.builder(payment)
+                .withForeignExchangeInfo(new ForeignExchangeInfo("FX345", 2.34, 200.00, "JPN"))
+                .build();
+        setAttributesAndSave(payment, attributes);
+        String newContractReference = "FX123";
+        String newOriginalCurrency = "USD";
+        double newExchangeRate = 1.56;
+        double newOriginalAmount = 100.67;
+        PaymentResourceData resourceData = createPaymentResourceDataWithFxInfo(newContractReference, newOriginalCurrency,
+                newExchangeRate, newOriginalAmount);
+
+        FinancialTransaction updatedPayment = paymentsService.updatePayment(payment.getId(), resourceData);
+
+        FinancialTransaction fetchedPayment = findByIdOrThrowRuntimeException(updatedPayment.getId());
+        ForeignExchangeInfo foreignExchangeInfo = fetchedPayment.getAttributes().getForeignExchangeInfo();
+        assertForeignExchangeInfoFields(foreignExchangeInfo, newContractReference, newOriginalCurrency, newExchangeRate, newOriginalAmount);
     }
 
     //
@@ -448,6 +484,11 @@ public class PaymentsServiceTests {
         return transactionPartyResource;
     }
 
+    private void setAttributesAndSave(FinancialTransaction payment, FinancialTransactionAttributes attributes) {
+        payment.setAttributes(attributes);
+        financialTransactionRepository.save(payment);
+    }
+
     private void assertTransactionPartyPresentWithAccountNumber(String accountNumber,
                                                                 TransactionParty transactionParty) {
         assertThat(transactionParty, notNullValue());
@@ -464,5 +505,26 @@ public class PaymentsServiceTests {
                 createTransactionPartyResourceWithAccountNumber(sponsorAccountNumber));
         resourceData.setPaymentAttributesResource(attributesResource);
         return resourceData;
+    }
+
+    private PaymentResourceData createPaymentResourceDataWithFxInfo(String contractReference, String originalCurrency, double exchangeRate, double originalAmount) {
+        PaymentResourceData resourceData = new PaymentResourceData();
+        PaymentAttributesResource attributesResource = new PaymentAttributesResource();
+        ForeignExchangeInfoResource fxResource = new ForeignExchangeInfoResource();
+        fxResource.setContractReference(contractReference);
+        fxResource.setOriginalCurrency(originalCurrency);
+        fxResource.setExchangeRate(exchangeRate);
+        fxResource.setOriginalAmount(originalAmount);
+        attributesResource.setFxResource(fxResource);
+        resourceData.setPaymentAttributesResource(attributesResource);
+        return resourceData;
+    }
+
+    private void assertForeignExchangeInfoFields(ForeignExchangeInfo foreignExchangeInfo, String contractReference, String originalCurrency, double exchangeRate, double originalAmount) {
+        assertThat(foreignExchangeInfo, notNullValue());
+        assertThat(foreignExchangeInfo.getContractReference(), is(contractReference));
+        assertThat(foreignExchangeInfo.getExchangeRate(), is(exchangeRate));
+        assertThat(foreignExchangeInfo.getOriginalAmount(), is(originalAmount));
+        assertThat(foreignExchangeInfo.getOriginalCurrency(), is(originalCurrency));
     }
 }

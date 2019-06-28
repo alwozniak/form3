@@ -328,6 +328,10 @@ public class FinancialTransactionAttributes {
         return foreignExchangeInfo;
     }
 
+    public void setForeignExchangeInfo(ForeignExchangeInfo foreignExchangeInfo) {
+        this.foreignExchangeInfo = foreignExchangeInfo;
+    }
+
     public ChargesInformation getChargesInformation() {
         return chargesInformation;
     }

@@ -69,4 +69,19 @@ public class ForeignExchangeInfo {
     public String getOriginalCurrency() {
         return originalCurrency;
     }
+
+    public void updateFields(String contractReference, Double exchangeRate, String originalCurrency, Double originalAmount) {
+        if (contractReference != null) {
+            this.contractReference = contractReference;
+        }
+        if (exchangeRate != null) {
+            this.exchangeRate = exchangeRate;
+        }
+        if (originalCurrency != null) {
+            this.originalCurrency = originalCurrency;
+        }
+        if (originalAmount != null) {
+            this.originalAmount = originalAmount;
+        }
+    }
 }

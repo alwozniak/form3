@@ -33,8 +33,7 @@ public class PaymentsService {
         FinancialTransaction payment = FinancialTransaction.newPayment(paymentResourceData.getOrganisationId());
         PaymentAttributesResource paymentAttributesResource = paymentResourceData.getPaymentAttributesResource();
         if (paymentAttributesResource != null) {
-            FinancialTransactionAttributes attributes = createAttributesFromResource(paymentAttributesResource, payment);
-            payment.setAttributes(attributes);
+            payment.setAttributes(createAttributesFromResource(paymentAttributesResource, payment));
         }
         return financialTransactionRepository.save(payment);
     }
@@ -68,11 +67,26 @@ public class PaymentsService {
                             createOrUpdateTransactionParty(paymentAttributes,
                                     paymentAttributes.getSponsorParty(), attributesResource.getSponsorPartyResource(),
                                     FinancialTransactionAttributes::setSponsorParty);
+                            createOrUpdateForeignExchangeInfo(paymentAttributes,
+                                    attributesResource.getForeignExchangeInfoResource());
                         }
                     }
                     return financialTransactionRepository.save(payment);
                 })
                 .orElseThrow(() -> new PaymentNotFoundException(paymentId));
+    }
+
+    private void createOrUpdateForeignExchangeInfo(FinancialTransactionAttributes paymentAttributes,
+                                                   ForeignExchangeInfoResource resource) {
+        if (resource != null) {
+            ForeignExchangeInfo foreignExchangeInfo = paymentAttributes.getForeignExchangeInfo();
+            if (foreignExchangeInfo == null) {
+                paymentAttributes.setForeignExchangeInfo(createForeignExchangeInfoFromResource(resource));
+            } else {
+                foreignExchangeInfo.updateFields(resource.getContractReference(), resource.getExchangeRate(),
+                        resource.getOriginalCurrency(), resource.getOriginalAmount());
+            }
+        }
     }
 
     private void createOrUpdateTransactionParty(FinancialTransactionAttributes attributes,
@@ -102,41 +116,69 @@ public class PaymentsService {
                 .withNumericReference(attributesResource.getNumericReference())
                 .withEndToEndReference(attributesResource.getEndToEndReference());
 
-        TransactionPartyResource beneficiaryResource = attributesResource.getBeneficiaryPartyResource();
-        if (beneficiaryResource != null) {
-            attributesBuilder.withBeneficiary(createTransactionPartyFromResource(beneficiaryResource));
-        }
+        maybeAddBeneficiary(attributesResource, attributesBuilder);
+        maybeAddDebtor(attributesResource, attributesBuilder);
+        maybeAddSponsor(attributesResource, attributesBuilder);
+        maybeAddForeignExchangeInfo(attributesResource, attributesBuilder);
+        maybeAddChargesInformation(attributesResource, attributesBuilder);
 
-        TransactionPartyResource debtorResource = attributesResource.getDebtorPartyResource();
-        if (debtorResource != null) {
-            attributesBuilder.withDebtor(createTransactionPartyFromResource(debtorResource));
-        }
+        return attributesBuilder.build();
+    }
 
+    private void maybeAddChargesInformation(PaymentAttributesResource attributesResource,
+                                            FinancialTransactionAttributes.Builder attributesBuilder) {
+        ChargesInformationResource chargesInformationResource = attributesResource.getChargesInformationResource();
+        if (chargesInformationResource != null) {
+            attributesBuilder.withChargesInformation(createChargesInformationFromResource(chargesInformationResource));
+        }
+    }
+
+    private void maybeAddForeignExchangeInfo(PaymentAttributesResource attributesResource,
+                                             FinancialTransactionAttributes.Builder attributesBuilder) {
+        ForeignExchangeInfoResource fxInfoResource = attributesResource.getForeignExchangeInfoResource();
+        if (fxInfoResource != null) {
+            attributesBuilder.withForeignExchangeInfo(createForeignExchangeInfoFromResource(fxInfoResource));
+        }
+    }
+
+    private void maybeAddSponsor(PaymentAttributesResource attributesResource,
+                                 FinancialTransactionAttributes.Builder attributesBuilder) {
         TransactionPartyResource sponsorResource = attributesResource.getSponsorPartyResource();
         if (sponsorResource != null) {
             attributesBuilder.withSponsorParty(createTransactionPartyFromResource(sponsorResource));
         }
+    }
 
-        ForeignExchangeInfoResource fxInfoResource = attributesResource.getForeignExchangeInfoResource();
-        if (fxInfoResource != null) {
-            attributesBuilder.withForeignExchangeInfo(
-                    new ForeignExchangeInfo(fxInfoResource.getContractReference(), fxInfoResource.getExchangeRate(),
-                            fxInfoResource.getOriginalAmount(), fxInfoResource.getOriginalCurrency()));
+    private void maybeAddDebtor(PaymentAttributesResource attributesResource,
+                                FinancialTransactionAttributes.Builder attributesBuilder) {
+        TransactionPartyResource debtorResource = attributesResource.getDebtorPartyResource();
+        if (debtorResource != null) {
+            attributesBuilder.withDebtor(createTransactionPartyFromResource(debtorResource));
         }
+    }
 
-        ChargesInformationResource chargesInformationResource = attributesResource.getChargesInformationResource();
-        if (chargesInformationResource != null) {
-            ChargesInformation.Builder chargesInformationBuilder =
-                    ChargesInformation.builder(chargesInformationResource.getBearerCode())
-                            .withReceiverCharge(chargesInformationResource.getReceiverChargesAmount(),
-                                    chargesInformationResource.getReceiverChargesCurrency());
-            chargesInformationResource.getSenderChargeResources()
-                    .forEach(resource ->
-                            chargesInformationBuilder.withSenderCharge(resource.getAmount(), resource.getCurrency()));
-            attributesBuilder.withChargesInformation(chargesInformationBuilder.build());
+    private void maybeAddBeneficiary(PaymentAttributesResource attributesResource,
+                                     FinancialTransactionAttributes.Builder attributesBuilder) {
+        TransactionPartyResource beneficiaryResource = attributesResource.getBeneficiaryPartyResource();
+        if (beneficiaryResource != null) {
+            attributesBuilder.withBeneficiary(createTransactionPartyFromResource(beneficiaryResource));
         }
+    }
 
-        return attributesBuilder.build();
+    private ChargesInformation createChargesInformationFromResource(ChargesInformationResource chargesInformationResource) {
+        ChargesInformation.Builder chargesInformationBuilder =
+                ChargesInformation.builder(chargesInformationResource.getBearerCode())
+                        .withReceiverCharge(chargesInformationResource.getReceiverChargesAmount(),
+                                chargesInformationResource.getReceiverChargesCurrency());
+        chargesInformationResource.getSenderChargeResources()
+                .forEach(resource ->
+                        chargesInformationBuilder.withSenderCharge(resource.getAmount(), resource.getCurrency()));
+        return chargesInformationBuilder.build();
+    }
+
+    private ForeignExchangeInfo createForeignExchangeInfoFromResource(ForeignExchangeInfoResource fxInfoResource) {
+        return new ForeignExchangeInfo(fxInfoResource.getContractReference(), fxInfoResource.getExchangeRate(),
+                fxInfoResource.getOriginalAmount(), fxInfoResource.getOriginalCurrency());
     }
 
     private TransactionParty createTransactionPartyFromResource(TransactionPartyResource resource) {
