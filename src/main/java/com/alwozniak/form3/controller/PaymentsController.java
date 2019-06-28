@@ -44,12 +44,11 @@ public class PaymentsController {
     }
 
     @PatchMapping(value = "/{paymentId}", consumes = "application/json")
-    public ResponseEntity<?> updatePayment(@RequestBody PaymentResourceData paymentResourceData,
+    public PaymentsResource updatePayment(@RequestBody PaymentResourceData paymentResourceData,
                                         @PathVariable("paymentId") UUID paymentId) {
         try {
             paymentsService.updatePayment(paymentId, paymentResourceData);
-            URI location = ServletUriComponentsBuilder.fromCurrentRequest().build().toUri();
-            return ResponseEntity.created(location).build();
+            return paymentsService.getSinglePaymentResource(paymentId);
         } catch (PaymentNotFoundException e) {
             throw new ResourceNotFoundException(e.getMessage());
         }

@@ -473,11 +473,11 @@ public class PaymentsControllerTests {
     }
 
     //
-    // Tests for PUT /payments/:id.
+    // Tests for PATCH /payments/:id.
     //
 
     @Test
-    public void shouldReturnResourceNotFoundResponseWhenRequestingToPatchNonexistingResource() throws Exception {
+    public void shouldReturnResourceNotFoundResponseWhenRequestingToPatchNonExistingResource() throws Exception {
         UUID nonExistingPaymentId = UUID.randomUUID();
         assertFalse(repository.findById(nonExistingPaymentId).isPresent());
         byte[] requestBody = getTestResource("payment-with-attributes.json");
@@ -486,6 +486,18 @@ public class PaymentsControllerTests {
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content(requestBody))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void shouldUpdateResourceWhenPatchingExistingResource() throws Exception {
+        FinancialTransaction existingPayment = repository.save(FinancialTransaction.newPayment(UUID.randomUUID()));
+        byte[] requestBody = getTestResource("payment-with-attributes-with-debtor.json");
+
+        mockMvc.perform(patch(PAYMENTS_PATH + "/" + existingPayment.getId().toString())
+                .content(requestBody)
+                .contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.attributes.debtor_party.bank_id", is("203301")));
     }
 
     //
