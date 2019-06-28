@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.function.BiConsumer;
 
 @Service
 public class PaymentsService {
@@ -58,11 +59,34 @@ public class PaymentsService {
                                     attributesResource.getPaymentScheme(), attributesResource.getProcessingDate(),
                                     attributesResource.getReference(), attributesResource.getSchemePaymentType(),
                                     attributesResource.getSchemePaymentSubType());
+                            createOrUpdateTransactionParty(paymentAttributes,
+                                    paymentAttributes.getBeneficiaryParty(), attributesResource.getBeneficiaryPartyResource(),
+                                    FinancialTransactionAttributes::setBeneficiaryParty);
+                            createOrUpdateTransactionParty(paymentAttributes,
+                                    paymentAttributes.getDebtorParty(), attributesResource.getDebtorPartyResource(),
+                                    FinancialTransactionAttributes::setDebtorParty);
+                            createOrUpdateTransactionParty(paymentAttributes,
+                                    paymentAttributes.getSponsorParty(), attributesResource.getSponsorPartyResource(),
+                                    FinancialTransactionAttributes::setSponsorParty);
                         }
                     }
                     return financialTransactionRepository.save(payment);
                 })
                 .orElseThrow(() -> new PaymentNotFoundException(paymentId));
+    }
+
+    private void createOrUpdateTransactionParty(FinancialTransactionAttributes attributes,
+                                                TransactionParty partyToUpdate, TransactionPartyResource partyResource,
+                                                BiConsumer<FinancialTransactionAttributes, TransactionParty> transactionPartySetter) {
+        if (partyResource != null) {
+            if (partyToUpdate == null) {
+                transactionPartySetter.accept(attributes, createTransactionPartyFromResource(partyResource));
+            } else {
+                partyToUpdate.updateFields(partyResource.getAccountNumberCode(), partyResource.getAccountNumber(),
+                        partyResource.getAccountType(), partyResource.getAccountName(), partyResource.getAddress(),
+                        partyResource.getBankId(), partyResource.getBankIdCode(), partyResource.getName());
+            }
+        }
     }
 
     private FinancialTransactionAttributes createAttributesFromResource(PaymentAttributesResource attributesResource,

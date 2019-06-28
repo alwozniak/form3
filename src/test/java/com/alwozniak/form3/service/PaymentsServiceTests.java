@@ -339,8 +339,7 @@ public class PaymentsServiceTests {
 
         FinancialTransaction updatedPayment = paymentsService.updatePayment(payment.getId(), resourceData);
 
-        FinancialTransaction persistedPayment = financialTransactionRepository.findById(updatedPayment.getId())
-                .orElseThrow(() -> new RuntimeException("Payment not found."));
+        FinancialTransaction persistedPayment = findByIdOrThrowRuntimeException(updatedPayment.getId());
         FinancialTransactionAttributes persistedPaymentAttributes = persistedPayment.getAttributes();
         assertThat(persistedPaymentAttributes, notNullValue());
         assertThat(persistedPaymentAttributes.getAmount(), is(91.00));
@@ -367,12 +366,62 @@ public class PaymentsServiceTests {
 
         FinancialTransaction modifiedPayment = paymentsService.updatePayment(payment.getId(), paymentResourceData);
 
-        FinancialTransaction fetchedPayment = financialTransactionRepository.findById(modifiedPayment.getId())
-                .orElseThrow(() -> new RuntimeException("Payment not found."));
+        FinancialTransaction fetchedPayment = findByIdOrThrowRuntimeException(modifiedPayment.getId());
         FinancialTransactionAttributes persistedPaymentAttributes = fetchedPayment.getAttributes();
         assertThat(persistedPaymentAttributes.getAmount(), is(91.00));
         assertThat(persistedPaymentAttributes.getEndToEndReference(), is(modifiedEndToEndReference));
         assertThat(persistedPaymentAttributes.getPaymentId(), is(paymentId));
+    }
+
+    @Test
+    public void shouldCreateBeneficiaryDebtorAndSponsorPartiesIfNotPresentWhenUpdatingPayment() throws PaymentNotFoundException {
+        FinancialTransaction payment = createNewPayment(UUID.randomUUID());
+        payment.setAttributes(FinancialTransactionAttributes.builder(payment).build());
+        financialTransactionRepository.save(payment);
+
+        String beneficiaryAccountNumber = "DE170000222299992222111122";
+        String debtorAccountNumber = "GB119999888877775555333312";
+        String sponsorAccountNumber = "31926819";
+        PaymentResourceData resourceData = createPaymentResourceDataWithPartiesOfAccountNumbers(
+                beneficiaryAccountNumber, debtorAccountNumber, sponsorAccountNumber);
+
+        FinancialTransaction updatedPayment = paymentsService.updatePayment(payment.getId(), resourceData);
+
+        FinancialTransaction fetchedPayment = findByIdOrThrowRuntimeException(updatedPayment.getId());
+        FinancialTransactionAttributes fetchedAttributes = fetchedPayment.getAttributes();
+        assertTransactionPartyPresentWithAccountNumber(beneficiaryAccountNumber,
+                fetchedAttributes.getBeneficiaryParty());
+        assertTransactionPartyPresentWithAccountNumber(debtorAccountNumber, fetchedAttributes.getDebtorParty());
+        assertTransactionPartyPresentWithAccountNumber(sponsorAccountNumber, fetchedAttributes.getSponsorParty());
+    }
+
+    @Test
+    public void shouldUpdateBeneficiaryDebtorAndSponsorPartiesWhenUpdatingPayment() throws PaymentNotFoundException {
+        FinancialTransaction payment = createNewPayment(UUID.randomUUID());
+        String beneficiaryAccountNumber = "DE170000222299992222111122";
+        String debtorAccountNumber = "GB119999888877775555333312";
+        String sponsorAccountNumber = "31926819";
+        FinancialTransactionAttributes attributes = FinancialTransactionAttributes.builder(payment)
+                .withBeneficiary(createTransactionPartyWithAccountNumber(beneficiaryAccountNumber))
+                .withDebtor(createTransactionPartyWithAccountNumber(debtorAccountNumber))
+                .withSponsorParty(createTransactionPartyWithAccountNumber(sponsorAccountNumber))
+                .build();
+        payment.setAttributes(attributes);
+        financialTransactionRepository.save(payment);
+        String newBeneficiaryAccountNumber = "AU1700002222999922212345367";
+        String newDebtorAccountNumber = "FR1199998888777755553653565";
+        String newSponsorAccountNumber = "419255363";
+        PaymentResourceData resourceData = createPaymentResourceDataWithPartiesOfAccountNumbers(
+                newBeneficiaryAccountNumber, newDebtorAccountNumber, newSponsorAccountNumber);
+
+        FinancialTransaction updatedPayment = paymentsService.updatePayment(payment.getId(), resourceData);
+
+        FinancialTransaction fetchedPayment = findByIdOrThrowRuntimeException(updatedPayment.getId());
+        FinancialTransactionAttributes fetchedAttributes = fetchedPayment.getAttributes();
+        assertTransactionPartyPresentWithAccountNumber(newBeneficiaryAccountNumber,
+                fetchedAttributes.getBeneficiaryParty());
+        assertTransactionPartyPresentWithAccountNumber(newDebtorAccountNumber, fetchedAttributes.getDebtorParty());
+        assertTransactionPartyPresentWithAccountNumber(newSponsorAccountNumber, fetchedAttributes.getSponsorParty());
     }
 
     //
@@ -382,5 +431,38 @@ public class PaymentsServiceTests {
     private FinancialTransaction createNewPayment(UUID initialOrganisationId) {
         FinancialTransaction newPayment = FinancialTransaction.newPayment(initialOrganisationId);
         return financialTransactionRepository.save(newPayment);
+    }
+
+    private FinancialTransaction findByIdOrThrowRuntimeException(UUID paymentId) {
+        return financialTransactionRepository.findById(paymentId)
+                .orElseThrow(() -> new RuntimeException("Payment not found."));
+    }
+
+    private TransactionParty createTransactionPartyWithAccountNumber(String accountNumber) {
+        return TransactionParty.builder().withAccountData(new AccountData(accountNumber)).build();
+    }
+
+    private TransactionPartyResource createTransactionPartyResourceWithAccountNumber(String accountNumber) {
+        TransactionPartyResource transactionPartyResource = new TransactionPartyResource();
+        transactionPartyResource.setAccountNumber(accountNumber);
+        return transactionPartyResource;
+    }
+
+    private void assertTransactionPartyPresentWithAccountNumber(String accountNumber,
+                                                                TransactionParty transactionParty) {
+        assertThat(transactionParty, notNullValue());
+        assertThat(transactionParty.getAccountNumber(), is(accountNumber));
+    }
+
+    private PaymentResourceData createPaymentResourceDataWithPartiesOfAccountNumbers(String beneficiaryAccountNumber, String debtorAccountNumber, String sponsorAccountNumber) {
+        PaymentResourceData resourceData = new PaymentResourceData();
+        PaymentAttributesResource attributesResource = new PaymentAttributesResource();
+        attributesResource.setBeneficiaryPartyResource(
+                createTransactionPartyResourceWithAccountNumber(beneficiaryAccountNumber));
+        attributesResource.setDebtorPartyResource(createTransactionPartyResourceWithAccountNumber(debtorAccountNumber));
+        attributesResource.setSponsorPartyResource(
+                createTransactionPartyResourceWithAccountNumber(sponsorAccountNumber));
+        resourceData.setPaymentAttributesResource(attributesResource);
+        return resourceData;
     }
 }

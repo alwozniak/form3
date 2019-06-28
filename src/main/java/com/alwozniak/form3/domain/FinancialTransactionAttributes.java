@@ -312,8 +312,16 @@ public class FinancialTransactionAttributes {
         return beneficiaryParty;
     }
 
+    public void setBeneficiaryParty(TransactionParty beneficiaryParty) {
+        this.beneficiaryParty = beneficiaryParty;
+    }
+
     public TransactionParty getDebtorParty() {
         return debtorParty;
+    }
+
+    public void setDebtorParty(TransactionParty debtorParty) {
+        this.debtorParty = debtorParty;
     }
 
     public ForeignExchangeInfo getForeignExchangeInfo() {
@@ -326,6 +334,10 @@ public class FinancialTransactionAttributes {
 
     public TransactionParty getSponsorParty() {
         return sponsorParty;
+    }
+
+    public void setSponsorParty(TransactionParty sponsorParty) {
+        this.sponsorParty = sponsorParty;
     }
 
     public void updateFields(Double amount, String currency, String endToEndReference, String numericReference,

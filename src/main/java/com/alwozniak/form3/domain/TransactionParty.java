@@ -128,4 +128,51 @@ public class TransactionParty {
     public Integer getAccountType() {
         return accountData.getAccountType();
     }
+
+    public void updateFields(AccountNumberCode accountNumberCode, String accountNumber, Integer accountType,
+                             String accountName, String address, String bankId, String bankIdCode, String name) {
+        if (this.accountData == null) {
+            if (accountDataShouldBeUpdated(accountNumberCode, accountNumber, accountName, accountType)) {
+                this.accountData = buildAccountData(accountNumberCode, accountNumber, accountName, accountType);
+            }
+        } else {
+            this.accountData.updateFields(accountNumberCode, accountNumber, accountName, accountType);
+        }
+
+        if (address != null) {
+            this.address = address;
+        }
+        if (bankId != null) {
+            this.bankId = bankId;
+        }
+        if (bankIdCode != null) {
+            this.bankIdCode = bankIdCode;
+        }
+        if (name != null) {
+            this.name = name;
+        }
+    }
+
+    private boolean accountDataShouldBeUpdated(AccountNumberCode accountNumberCode, String accountNumber, String accountName,
+                                               Integer accountType) {
+        return accountName != null || accountNumber != null || accountNumberCode != null || accountType != null;
+    }
+
+    private AccountData buildAccountData(AccountNumberCode accountNumberCode, String accountNumber, String accountName,
+                                         Integer accountType) {
+        if (accountName == null) {
+            return new AccountData(accountNumber);
+        }
+
+        AccountData.Builder accountDataBuilder = AccountData.builder(accountName);
+        if (accountNumberCode == AccountNumberCode.BBAN) {
+            accountDataBuilder.withBbanNumber(accountNumber);
+        } else if (accountNumberCode == AccountNumberCode.IBAN) {
+            accountDataBuilder.withIbanNumber(accountNumber);
+        }
+        if (accountType != null) {
+            accountDataBuilder.withType(accountType);
+        }
+        return accountDataBuilder.build();
+    }
 }

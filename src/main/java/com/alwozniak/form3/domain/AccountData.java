@@ -110,4 +110,20 @@ public class AccountData {
     public Integer getAccountType() {
         return accountType;
     }
+
+    public void updateFields(AccountNumberCode accountNumberCode, String accountNumber, String accountName,
+                             Integer accountType) {
+        if (accountNumberCode != null) {
+            this.accountNumberCode = accountNumberCode;
+        }
+        if (accountNumber != null) {
+            this.accountNumber = accountNumber;
+        }
+        if (accountName != null) {
+            this.accountName = accountName;
+        }
+        if (accountType != null) {
+            this.accountType = accountType;
+        }
+    }
 }
