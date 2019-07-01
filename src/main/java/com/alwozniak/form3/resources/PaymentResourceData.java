@@ -3,12 +3,12 @@ package com.alwozniak.form3.resources;
 import com.alwozniak.form3.domain.FinancialTransaction;
 import com.alwozniak.form3.domain.FinancialTransaction.FinancialTransactionType;
 import com.alwozniak.form3.domain.FinancialTransactionAttributes;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.*;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.UUID;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class PaymentResourceData {
 
     private FinancialTransactionType transactionType;

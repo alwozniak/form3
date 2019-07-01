@@ -4,11 +4,13 @@ import com.alwozniak.form3.domain.ChargeInfoForCurrency;
 import com.alwozniak.form3.domain.ChargesInformation;
 import com.alwozniak.form3.domain.ChargesInformation.ChargeType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ChargesInformationResource {
 
     private ChargeType bearerCode;

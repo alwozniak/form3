@@ -3,8 +3,10 @@ package com.alwozniak.form3.resources;
 import com.alwozniak.form3.domain.AccountData.AccountNumberCode;
 import com.alwozniak.form3.domain.TransactionParty;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class TransactionPartyResource {
 
     private String name;

@@ -9,8 +9,8 @@ import com.alwozniak.form3.domain.FinancialTransactionAttributes.SchemePaymentTy
 import com.alwozniak.form3.domain.ForeignExchangeInfo;
 import com.alwozniak.form3.domain.TransactionParty;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSetter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.CaseUtils;
 
@@ -18,6 +18,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class PaymentAttributesResource {
 
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");

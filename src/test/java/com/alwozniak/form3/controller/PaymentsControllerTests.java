@@ -65,13 +65,16 @@ public class PaymentsControllerTests {
 
     @Test
     public void shouldCorrectlyFetchSingletonListOfPayments() throws Exception {
-        FinancialTransaction persistedPayment = repository.save(FinancialTransaction.newPayment(UUID.randomUUID()));
+        UUID organisationId = UUID.randomUUID();
+        FinancialTransaction persistedPayment = repository.save(FinancialTransaction.newPayment(organisationId));
 
         mockMvc.perform(get(PAYMENTS_PATH).accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(jsonPath("$.data.length()", is(1)))
-                .andExpect(jsonPath("$.data[0].id", is(persistedPayment.getId().toString())));
+                .andExpect(jsonPath("$.data[0].id", is(persistedPayment.getId().toString())))
+                .andExpect(jsonPath("$.data[0].type", is("Payment")))
+                .andExpect(jsonPath("$.data[0].organisation_id", is(organisationId.toString())));
     }
 
     @Test

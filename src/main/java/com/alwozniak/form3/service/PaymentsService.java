@@ -21,7 +21,9 @@ public class PaymentsService {
 
     public PaymentsListResource getPaymentsListResource() {
         List<FinancialTransaction> payments = financialTransactionRepository.findAllPayments();
-        return new PaymentsListResource(payments);
+        return new PaymentsListResource(payments.stream()
+                .map(PaymentResourceData::new)
+                .collect(Collectors.toList()));
     }
 
     public SinglePaymentResource getSinglePaymentResource(UUID paymentId) throws PaymentNotFoundException {
