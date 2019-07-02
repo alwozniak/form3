@@ -1,0 +1,11 @@
+DELETE /payments/:id
+-----------------------
+
+Example curl request:
+
+curl --request DELETE http://localhost:8080/payments/f604c426-b03b-452f-9579-7eca2286859d
+
+-----------------------
+
+Response:
+Status code: 204

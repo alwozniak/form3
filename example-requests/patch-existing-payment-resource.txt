@@ -1,0 +1,83 @@
+PATCH /payments/:id
+-----------------------
+
+Example curl request:
+
+curl -H "Content-Type: application/json" \
+--request PATCH http://localhost:8080/payments/81c1219c-7cd7-49a1-b646-4020e70e7e6e \
+--data '{ "attributes": { "amount": 200.12, "currency": "USD", "reference": "Updated reference" }}'
+
+-----------------------
+
+Response:
+Status code: 200
+Response body:
+
+{
+  "data": {
+    "id": "81c1219c-7cd7-49a1-b646-4020e70e7e6e",
+    "version": 0,
+    "attributes": {
+      "amount": 200.12,
+      "currency": "USD",
+      "end_to_end_reference": "Wil piano Jan",
+      "numeric_reference": "1002001",
+      "payment_id": "123456789012345678",
+      "payment_purpose": "Paying for goods/services",
+      "reference": "Updated reference",
+      "beneficiary_party": {
+        "name": "Wilfred Jeremiah Owens",
+        "account_name": "W Owens",
+        "account_number": "31926819",
+        "account_number_code": "BBAN",
+        "account_type": 0,
+        "bank_id_code": "GBDSC",
+        "address": "1 The Beneficiary Localtown SE2",
+        "bank_id": "403000"
+      },
+      "debtor_party": {
+        "name": "Emelia Jane Brown",
+        "account_name": "EJ Brown Black",
+        "account_number": "GB29XABC10161234567801",
+        "account_number_code": "IBAN",
+        "account_type": 0,
+        "bank_id_code": "GBDSC",
+        "address": "10 Debtor Crescent Sourcetown NE1",
+        "bank_id": "203301"
+      },
+      "charges_information": {
+        "receiver_charges_currency": "USD",
+        "sender_charges": [
+          {
+            "amount": "1.00",
+            "currency": "GBP"
+          },
+          {
+            "amount": "10.00",
+            "currency": "USD"
+          }
+        ],
+        "bearer_code": "SHAR",
+        "receiver_charges_amount": "1.00"
+      },
+      "sponsor_party": {
+        "bank_id_code": "GBDSC",
+        "bank_id": "123123",
+        "account_number": "56781234"
+      },
+      "payment_scheme": "FPS",
+      "payment_type": "Credit",
+      "processing_date": "2017-01-18",
+      "scheme_payment_type": "ImmediatePayment",
+      "scheme_payment_sub_type": "InternetBanking",
+      "fx": {
+        "contract_reference": "FX123",
+        "original_currency": "USD",
+        "exchange_rate": "2.00000",
+        "original_amount": "200.42"
+      }
+    },
+    "type": "Payment",
+    "organisation_id": "743d5b63-8e6f-432e-a8fa-c5d8d2ee5fcb"
+  }
+}

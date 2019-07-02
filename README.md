@@ -27,3 +27,6 @@ Make sure that the following software is installed on a deployment machine:
 1. In your terminal, navigate to the root folder of this repository.
 1. Run `mvn clean package` to run API's test suite and create a deployable package file.
 1. Run `mvn spring-boot:run` to start the server.
+
+API is accessible under `http://localhost:8080` after deployment. Issue a GET request to `http://localhost:8080/payments` 
+to test it.
